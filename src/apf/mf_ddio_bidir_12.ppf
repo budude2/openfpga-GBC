@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE pinplan>
+<pinplan intended_family="Cyclone V" variation_name="mf_ddio_bidir_12" megafunction_name="ALTDDIO_BIDIR" specifies="all_ports">
+<global>
+<pin name="datain_h[11..0]" direction="input" scope="external"  />
+<pin name="datain_l[11..0]" direction="input" scope="external"  />
+<pin name="inclock" direction="input" scope="external" source="clock"  />
+<pin name="oe" direction="input" scope="external"  />
+<pin name="outclock" direction="input" scope="external" source="clock"  />
+<pin name="dataout_h[11..0]" direction="output" scope="external"  />
+<pin name="dataout_l[11..0]" direction="output" scope="external"  />
+<pin name="padio[11..0]" direction="bidir" scope="external"  />
+
+</global>
+</pinplan>
