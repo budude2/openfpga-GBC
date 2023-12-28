@@ -1,0 +1,34 @@
+{
+  "core": {
+    "magic": "APF_VER_1",
+    "metadata": {
+      "platform_ids": ["gbc"],
+      "shortname": "GBC",
+      "description": "Nintendo Entertainment System and Famicom. Nintendo's first home console",
+      "author": "budude2",
+      "url": "https://github.com/agg23/openFPGA-NES",
+      "version": "1.0.0",
+      "date_release": "2023-09-26"
+    },
+    "framework": {
+      "target_product": "Analogue Pocket",
+      "version_required": "1.1",
+      "sleep_supported": false,
+      "dock": {
+        "supported": true,
+        "analog_output": false
+      },
+      "hardware": {
+        "link_port": false,
+        "cartridge_adapter": -1
+      }
+    },
+    "cores": [
+      {
+        "name": "default",
+        "id": 0,
+        "filename": "gbc.rbf_r"
+      }
+    ]
+  }
+}

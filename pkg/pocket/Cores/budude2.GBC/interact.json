@@ -1,0 +1,16 @@
+{
+  "interact": {
+    "magic": "APF_VER_1",
+    "variables": [
+      {
+        "name": "Reset core",
+        "id": 10,
+        "type": "action",
+        "enabled": true,
+        "address": "0x50",
+        "value": 1
+      }
+    ],
+    "messages": []
+  }
+}

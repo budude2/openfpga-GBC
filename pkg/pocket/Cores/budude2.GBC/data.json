@@ -1,0 +1,29 @@
+{
+  "data": {
+    "magic": "APF_VER_1",
+    "data_slots": [
+      {
+        "name": "Cartridge",
+        "id": 0,
+        "required": false,
+        "parameters": "0x109",
+        "extensions": ["gbc"],
+        "address": "0x10000000"
+      },
+      {
+        "name": "BIOS",
+        "filename": "gbc_bios.bin",
+        "id": 4,
+        "required": true,
+        "parameters": 137,
+        "nonvolatile": false,
+        "extensions": [
+            "bin"
+        ],
+        "size_exact": 2304,
+        "size_maximum": 2304,
+        "address": "0x10000000"
+      }
+    ]
+  }
+}
