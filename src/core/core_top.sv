@@ -555,9 +555,24 @@ mf_pllbase mp1
 wire CLK_VIDEO    = clk_ram;
 wire CLK_VIDEO_90 = clk_ram_90;
 
-
 wire external_reset = reset_delay > 0;
 wire external_reset_s;
+
+data_loader #(
+  .ADDRESS_MASK_UPPER_4(4'h1)
+) data_loader (
+  .clk_74a(clk_74a),
+  .clk_memory(clk_sys),
+
+  .bridge_wr(bridge_wr),
+  .bridge_endian_little(bridge_endian_little),
+  .bridge_addr(bridge_addr),
+  .bridge_wr_data(bridge_wr_data),
+
+  .write_en  (ioctl_wr),
+  .write_addr(ioctl_addr),  // Unused
+  .write_data(ioctl_dout)
+);
 
 //////// Start GB/GBC Stuff ////////
 

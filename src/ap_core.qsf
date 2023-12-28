@@ -741,6 +741,7 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_1wire
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spiclk
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimiso
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimosi
+set_global_assignment -name SYSTEMVERILOG_FILE gb/data_loader.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/sound_i2s.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/sync_fifo.sv
 set_global_assignment -name QIP_FILE gb/audio/mf_audio_pll.qip
