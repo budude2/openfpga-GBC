@@ -285,16 +285,6 @@ assign cram1_we_n  = 1;
 assign cram1_ub_n  = 1;
 assign cram1_lb_n  = 1;
 
-assign dram_a      = 'h0;
-assign dram_ba     = 'h0;
-assign dram_dq     = {16{1'bZ}};
-assign dram_dqm    = 'h0;
-assign dram_clk    = 'h0;
-assign dram_cke    = 'h0;
-assign dram_ras_n  = 'h1;
-assign dram_cas_n  = 'h1;
-assign dram_we_n   = 'h1;
-
 assign sram_a      = 'h0;
 assign sram_dq     = {16{1'bZ}};
 assign sram_oe_n   = 1;
@@ -326,7 +316,6 @@ always @(*) begin
     end
     endcase
 end
-
 
 //
 // host/target command handler
@@ -490,44 +479,132 @@ core_bridge_cmd icb (
 
 );
 
-wire clk_sys, clk_ram;
+wire clk_sys, clk_ram, clk_ram_90;
 
 wire    pll_core_locked;
 wire    pll_core_locked_s;
+wire    reset_n_s;
 
-synch_3 s01(pll_core_locked, pll_core_locked_s, clk_74a);
+synch_3 s01(pll_core_locked, pll_core_locked_s, clk_ram);
+synch_3 s02(reset_n, reset_n_s, clk_sys);
 
 mf_pllbase mp1
 (
     .refclk         ( clk_74a ),
     .rst            ( 0 ),
     
-    .outclk_0       ( clk_sys ),
-    .outclk_1       ( clk_ram ),
+    .outclk_0       ( clk_ram ),
+    .outclk_1       ( clk_ram_90 ),
+    .outclk_2       ( clk_sys ),
     
     .locked         ( pll_core_locked )
 );
 
+wire CLK_VIDEO    = clk_ram;
+wire CLK_VIDEO_90 = clk_ram_90;
+
 //////// Start GB/GBC Stuff ////////
-// the gameboy itself
-gb gb (
+
+wire [15:0] joy0_rumble;
+
+wire [14:0] cart_addr;
+wire [22:0] mbc_addr;
+wire cart_a15;
+wire cart_rd;
+wire cart_wr;
+wire cart_oe;
+wire [7:0] cart_di, cart_do;
+wire nCS; // WRAM or Cart RAM CS
+
+wire        ioctl_download;
+wire        ioctl_wr;
+wire [24:0] ioctl_addr;
+wire [15:0] ioctl_dout;
+wire        ioctl_wait;
+
+wire cart_download       = ioctl_download && (filetype[5:0] == 6'h01 || filetype == 8'h80);
+wire md_download         = ioctl_download && (filetype == 8'h81);
+wire palette_download    = ioctl_download && (filetype == 3 /*|| !filetype*/);
+wire sgb_border_download = ioctl_download && (filetype == 2);
+wire cgb_boot_download   = ioctl_download && (filetype == 4);
+wire dmg_boot_download   = ioctl_download && (filetype == 5);
+wire sgb_boot_download   = ioctl_download && (filetype == 6);
+wire boot_download       = cgb_boot_download | dmg_boot_download | sgb_boot_download;
+
+
+wire  [1:0] sdram_ds     = cart_download ? 2'b11 : {mbc_addr[0], ~mbc_addr[0]};
+wire [15:0] sdram_do;
+wire [15:0] sdram_di     = cart_download ? ioctl_dout : 16'd0;
+wire [23:0] sdram_addr   = cart_download? ioctl_addr[24:1]: {2'b00, mbc_addr[22:1]};
+wire sdram_oe            = ~cart_download & cart_rd & ~cram_rd;
+wire sdram_we            = cart_download & dn_write;
+wire sdram_refresh_force;
+wire sdram_autorefresh   = !ff_on;
+
+assign dram_cke = 1;
+
+sdram sdram (
+   // interface to the MT48LC16M16 chip
+   .sd_data        ( dram_dq ),
+   .sd_addr        ( dram_a ),
+   .sd_dqm         ( dram_dqm ),
+   .sd_cs          (  ),
+   .sd_ba          ( dram_ba ),
+   .sd_we          ( dram_we_n ),
+   .sd_ras         ( dram_ras_n ),
+   .sd_cas         ( dram_cas_n ),
+   .sd_clk         ( dram_clk ),
+
+    // system interface
+   .clk            ( clk_ram                   ),
+   .sync           ( ce_cpu2x                  ),
+   .init           ( ~pll_core_locked_s        ),
+
+   // cpu interface
+   .din            ( sdram_di                  ),
+   .addr           ( sdram_addr                ),
+   .ds             ( sdram_ds                  ),
+   .we             ( sdram_we                  ),
+   .oe             ( sdram_oe                  ),
+   .autorefresh    ( sdram_autorefresh         ),
+   .refresh        ( sdram_refresh_force       ),
+   .dout           ( sdram_do                  )
+);
+
+wire dn_write;
+wire cart_ready;
+wire cram_rd, cram_wr;
+wire [7:0] rom_do = (mbc_addr[0]) ? sdram_do[15:8] : sdram_do[7:0];
+wire [7:0] ram_mask_file, cart_ram_size;
+wire isGBC_game, isSGB_game;
+wire cart_has_save;
+wire [31:0] RTC_timestampOut;
+wire [47:0] RTC_savedtimeOut;
+wire RTC_inuse;
+wire rumbling;
+wire [2:0] mapper_sel = status[41:39];
+
+assign joy0_rumble = {8'd0, ((rumbling & ~status[38]) ? 8'd128 : 8'd0)};
+
+reg ce_32k; // 32768Hz clock for RTC
+reg [9:0] ce_32k_div;
+always @(posedge clk_sys) begin
+    ce_32k_div <= ce_32k_div + 1'b1;
+    ce_32k <= !ce_32k_div;
+end
+
+cart_top cart (
     .reset       ( reset      ),
-    
+
     .clk_sys     ( clk_sys    ),
-    .ce          ( ce_cpu     ),   // the whole gameboy runs on 4mhnz
-    .ce_2x       ( ce_cpu2x   ),   // ~8MHz in dualspeed mode (GBC)
-    
-    .isGBC       ( isGBC      ),
-    .real_cgb_boot ( using_real_cgb_bios ),  
-    .isSGB       ( |sgb_en & ~isGBC ),
+    .ce_cpu      ( ce_cpu     ),
+    .ce_cpu2x    ( ce_cpu2x   ),
+    .speed       ( speed      ),
     .megaduck    ( megaduck   ),
+    .mapper_sel  ( mapper_sel ),
 
-    .joy_p54     ( joy_p54     ),
-    .joy_din     ( joy_do_sgb  ),
-
-    // interface to the "external" game cartridge
-    .ext_bus_addr( cart_addr  ),
-    .ext_bus_a15 ( cart_a15   ),
+    .cart_addr   ( cart_addr  ),
+    .cart_a15    ( cart_a15   ),
     .cart_rd     ( cart_rd    ),
     .cart_wr     ( cart_wr    ),
     .cart_do     ( cart_do    ),
@@ -536,82 +613,460 @@ gb gb (
 
     .nCS         ( nCS        ),
 
-    .boot_gba_en    ( boot_gba_available && status[37] ),
-    .fast_boot_en   ( fastboot_available && status[42] ),
+    .mbc_addr    ( mbc_addr   ),
 
-    .cgb_boot_download ( cgb_boot_download ),
-    .dmg_boot_download ( dmg_boot_download ),
-    .sgb_boot_download ( sgb_boot_download ),
+    .dn_write    ( dn_write    ),
+    .cart_ready  ( cart_ready  ),
+
+    .cram_rd     ( cram_rd     ),
+    .cram_wr     ( cram_wr     ),
+
+    .cart_download ( cart_download ),
+
+    .ram_mask_file ( ram_mask_file ),
+    .ram_size      ( cart_ram_size ),
+    .has_save      ( cart_has_save ),
+
+    .isGBC_game    ( isGBC_game    ),
+    .isSGB_game    ( isSGB_game    ),
+
+    .ioctl_download ( ioctl_download ),
     .ioctl_wr       ( ioctl_wr       ),
     .ioctl_addr     ( ioctl_addr     ),
     .ioctl_dout     ( ioctl_dout     ),
+    .ioctl_wait     ( ioctl_wait     ),
+
+    .bk_wr          ( 0 ),
+    .bk_rtc_wr      ( 0 ),
+    .bk_addr        ( 0 ),
+    .bk_data        ( 0 ),
+    .bk_q           (   ),
+    .img_size       ( 0 ),
+
+    .rom_di         ( rom_do       ),
+
+    .joystick_analog_0 ( 0 ),
+
+    .ce_32k           ( ce_32k           ),
+    .RTC_time         ( rtc_epoch_seconds),
+    .RTC_timestampOut ( RTC_timestampOut ),
+    .RTC_savedtimeOut ( RTC_savedtimeOut ),
+    .RTC_inuse        ( RTC_inuse        ),
+
+    .SaveStateExt_Din ( 0 ),
+    .SaveStateExt_Adr ( 0 ),
+    .SaveStateExt_wren( 0 ),
+    .SaveStateExt_rst ( 0 ),
+    .SaveStateExt_Dout( ),
+    .savestate_load   ( 0 ),
+    .sleep_savestate  ( 0 ),
+
+    .Savestate_CRAMAddr     ( 0 ),
+    .Savestate_CRAMRWrEn    ( 0 ),
+    .Savestate_CRAMWriteData( 0 ),
+    .Savestate_CRAMReadData (  ),
+    
+    .rumbling (rumbling)
+);
+
+reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
+
+always @(posedge clk_sys) begin
+    if (palette_download & ioctl_wr) begin
+            palette[127:0] <= {palette[111:0], ioctl_dout[7:0], ioctl_dout[15:8]};
+    end
+end
+
+wire lcd_clkena;
+wire [14:0] lcd_data;
+wire [1:0] lcd_mode;
+wire [1:0] lcd_data_gb;
+wire lcd_on;
+wire lcd_vsync;
+
+wire DMA_on;
+
+wire reset = (~reset_n_s | status[0] | buttons[1] | cart_download | boot_download | bk_loading);
+wire speed;
+reg megaduck = 0;
+
+reg isGBC = 0;
+always @(posedge clk_sys) if(reset) begin
+    if (cart_download)
+        megaduck <= sys_megaduck;
+    if (md_download)
+        megaduck <= sys_auto || sys_megaduck;
+
+    if(~sys_auto) isGBC <= sys_gbc;
+    else if(cart_download) begin
+        if (!filetype[5:0]) isGBC <= isGBC_game;
+        else isGBC <= !filetype[7:6];
+    end
+end
+
+wire [15:0] GB_AUDIO_L;
+wire [15:0] GB_AUDIO_R;
+
+// the gameboy itself
+gb gb
+(
+    .reset                  ( reset ),
+    
+    .clk_sys                ( clk_sys    ),
+    .ce                     ( ce_cpu     ),   // the whole gameboy runs on 4mhnz
+    .ce_2x                  ( ce_cpu2x   ),   // ~8MHz in dualspeed mode (GBC)
+    
+    .isGBC                  ( isGBC      ),
+    .real_cgb_boot          ( 1 ),  
+    .isSGB                  ( |sgb_en & ~isGBC ),
+    .megaduck               ( megaduck   ),
+
+    .joy_p54                ( joy_p54     ),
+    .joy_din                ( joy_do_sgb  ),
+
+    // interface to the "external" game cartridge
+    .ext_bus_addr           ( cart_addr  ),
+    .ext_bus_a15            ( cart_a15   ),
+    .cart_rd                ( cart_rd    ),
+    .cart_wr                ( cart_wr    ),
+    .cart_do                ( cart_do    ),
+    .cart_di                ( cart_di    ),
+    .cart_oe                ( cart_oe    ),
+
+    .nCS                    ( nCS        ),
+
+    .boot_gba_en            ( 0 ),
+    .fast_boot_en           ( 0 ),
+
+    .cgb_boot_download      ( cgb_boot_download ),
+    .dmg_boot_download      ( dmg_boot_download ),
+    .sgb_boot_download      ( sgb_boot_download ),
+    .ioctl_wr               ( ioctl_wr       ),
+    .ioctl_addr             ( ioctl_addr     ),
+    .ioctl_dout             ( ioctl_dout     ),
 
     // audio
-    .audio_l     ( GB_AUDIO_L ),
-    .audio_r     ( GB_AUDIO_R ),
+    .audio_l                ( GB_AUDIO_L ),
+    .audio_r                ( GB_AUDIO_R ),
     
     // interface to the lcd
-    .lcd_clkena  ( lcd_clkena ),
-    .lcd_data    ( lcd_data   ),
-    .lcd_data_gb ( lcd_data_gb ),
-    .lcd_mode    ( lcd_mode   ),
-    .lcd_on      ( lcd_on     ),
-    .lcd_vsync   ( lcd_vsync  ),
+    .lcd_clkena             ( lcd_clkena ),
+    .lcd_data               ( lcd_data   ),
+    .lcd_data_gb            ( lcd_data_gb ),
+    .lcd_mode               ( lcd_mode   ),
+    .lcd_on                 ( lcd_on     ),
+    .lcd_vsync              ( lcd_vsync  ),
     
-    .speed       ( speed      ),
-    .DMA_on      ( DMA_on    ),
+    .speed                  ( speed      ),
+    .DMA_on                 ( DMA_on    ),
     
     // serial port
-    .sc_int_clock2(sc_int_clock_out),
-    .serial_clk_in(ser_clk_in),
-    .serial_data_in(ser_data_in),
-    .serial_clk_out(ser_clk_out),
-    .serial_data_out(ser_data_out),
+    .sc_int_clock2          (),
+    .serial_clk_in          (0),
+    .serial_data_in         (0),
+    .serial_clk_out         (),
+    .serial_data_out        (),
     
     // Palette download will disable cheats option (HPS doesn't distinguish downloads),
     // so clear the cheats and disable second option (chheats enable/disable)
-    .gg_reset((code_download && ioctl_wr && !ioctl_addr) | cart_download | palette_download),
-    .gg_en(~status[17]),
-    .gg_code(gg_code),
-    .gg_available(gg_available),
+    .gg_reset               (0),
+    .gg_en                  (0),
+    .gg_code                (0),
+    .gg_available           (0),
     
     // savestates
-    .increaseSSHeaderCount (!status[31]),
-    .cart_ram_size   (cart_ram_size),
-    .save_state      (ss_save),
-    .load_state      (ss_load),
-    .savestate_number(ss_slot),
-    .sleep_savestate (sleep_savestate),
+    .increaseSSHeaderCount  (0),
+    .cart_ram_size          (0),
+    .save_state             (0),
+    .load_state             (0),
+    .savestate_number       (0),
+    .sleep_savestate        (),
     
-    .SaveStateExt_Din (SaveStateBus_Din),
-    .SaveStateExt_Adr (SaveStateBus_Adr),
-    .SaveStateExt_wren(SaveStateBus_wren),
-    .SaveStateExt_rst (SaveStateBus_rst),
-    .SaveStateExt_Dout(SaveStateBus_Dout),
-    .SaveStateExt_load(savestate_load),
+    .SaveStateExt_Din       (),
+    .SaveStateExt_Adr       (),
+    .SaveStateExt_wren      (),
+    .SaveStateExt_rst       (),
+    .SaveStateExt_Dout      (0),
+    .SaveStateExt_load      (),
     
-    .Savestate_CRAMAddr     (Savestate_CRAMAddr),
-    .Savestate_CRAMRWrEn    (Savestate_CRAMRWrEn),
-    .Savestate_CRAMWriteData(Savestate_CRAMWriteData),
-    .Savestate_CRAMReadData (Savestate_CRAMReadData),
+    .Savestate_CRAMAddr     (),
+    .Savestate_CRAMRWrEn    (),
+    .Savestate_CRAMWriteData(),
+    .Savestate_CRAMReadData (0),
     
-    .SAVE_out_Din(ss_din),            // data read from savestate
-    .SAVE_out_Dout(ss_dout),          // data written to savestate
-    .SAVE_out_Adr(ss_addr),           // all addresses are DWORD addresses!
-    .SAVE_out_rnw(ss_rnw),            // read = 1, write = 0
-    .SAVE_out_ena(ss_req),            // one cycle high for each action
-    .SAVE_out_be(ss_be),            
-    .SAVE_out_done(ss_ack),            // should be one cycle high when write is done or read value is valid
+    .SAVE_out_Din           (),            // data read from savestate
+    .SAVE_out_Dout          (0),           // data written to savestate
+    .SAVE_out_Adr           (),           // all addresses are DWORD addresses!
+    .SAVE_out_rnw           (),            // read = 1, write = 0
+    .SAVE_out_ena           (),            // one cycle high for each action
+    .SAVE_out_be            (),            
+    .SAVE_out_done          (0),            // should be one cycle high when write is done or read value is valid
     
-    .rewind_on(status[27]),
-    .rewind_active(status[27] & joystick_0[10])
+    .rewind_on              (status[27]),
+    .rewind_active          (status[27] & joystick_0[10])
 );
 
-///////////////////////////////////////////////
+// Sound
 
+wire [15:0] audio_l, audio_r;
+reg  [15:0] audio_buffer_l = 0, audio_buffer_r = 0;
 
+assign audio_l = (fast_forward && status[25]) ? 16'd0 : GB_AUDIO_L;
+assign audio_r = (fast_forward && status[25]) ? 16'd0 : GB_AUDIO_R;
 
+// Buffer audio to have better fitting on audio route
+always @(posedge clk_sys) begin
+    audio_buffer_l <= audio_l;
+    audio_buffer_r <= audio_r;
+end
 
+audio_mixer #(
+  .DW(16),
+  .STEREO(0)
+) audio_mixer (
+  .clk_74b  (clk_74b),
+  .clk_audio(clk_sys),
 
-    
+  // .reset()
+
+  .vol_att(0),
+  .mix(0),
+
+  .is_signed(0),
+  .core_l(audio_buffer_l),
+  .core_r(audio_buffer_r),
+
+  .audio_mclk(audio_mclk),
+  .audio_lrck(audio_lrck),
+  .audio_dac (audio_dac)
+);
+
+// the lcd to vga converter
+wire ce_pix;
+wire [8:0] h_cnt, v_cnt;
+wire [1:0] tint = status[2:1];
+wire h_end;
+
+lcd lcd
+(
+    // serial interface
+    .clk_sys( clk_sys    ),
+    .ce     ( ce_cpu     ),
+
+    .lcd_clkena ( sgb_lcd_clkena ),
+    .data   ( sgb_lcd_data   ),
+    .mode   ( sgb_lcd_mode   ),  // used to detect begin of new lines and frames
+    .on     ( sgb_lcd_on     ),
+    .lcd_vs ( sgb_lcd_vsync  ),
+    .shadow ( status[36]     ),
+
+    .isGBC  ( isGBC      ),
+
+    .tint   ( |tint       ),
+    .inv    ( status[12]  ),
+    .double_buffer( status[5]),
+    .frame_blend( status[16] ),
+    .originalcolors( status[30] ),
+    .analog_wide ( status[34] ),
+
+    // Palettes
+    .pal1   (palette[127:104]),
+    .pal2   (palette[103:80]),
+    .pal3   (palette[79:56]),
+    .pal4   (palette[55:32]),
+
+    .sgb_border_pix ( sgb_border_pix),
+    .sgb_pal_en     ( sgb_pal_en ),
+    .sgb_en         ( sgb_border_en ),
+    .sgb_freeze     ( sgb_lcd_freeze),
+
+    .clk_vid( CLK_VIDEO  ),
+    .hs     ( video_hs_gb   ),
+    .vs     ( video_vs_gb   ),
+    .hbl    ( h_blank    ),
+    .vbl    ( v_blank    ),
+    .r      ( video_rgb_gb[23:16] ),
+    .g      ( video_rgb_gb[15:8]  ),
+    .b      ( video_rgb_gb[7:0]   ),
+    .ce_pix ( ce_pix     ),
+    .h_cnt  ( h_cnt      ),
+    .v_cnt  ( v_cnt      ),
+    .h_end  ( h_end      )
+);
+
+wire [1:0] joy_p54;
+wire [3:0] joy_do_sgb;
+wire [14:0] sgb_lcd_data;
+wire [15:0] sgb_border_pix;
+wire sgb_lcd_clkena, sgb_lcd_on, sgb_lcd_vsync, sgb_lcd_freeze;
+wire [1:0] sgb_lcd_mode;
+wire sgb_pal_en;
+wire [1:0] sgb_en = status[24:23];
+wire sgb_border_en = sgb_en[1];
+
+sgb sgb (
+    .reset       ( reset       ),
+    .clk_sys     ( clk_sys     ),
+    .ce          ( ce_cpu      ),
+
+    .clk_vid     ( CLK_VIDEO   ),
+    .ce_pix      ( ce_pix      ),
+
+    .joystick_0  ( cont1_key  ),
+    .joystick_1  ( cont2_key  ),
+    .joystick_2  ( cont3_key  ),
+    .joystick_3  ( cont4_key  ),
+    .joy_p54     ( joy_p54     ),
+    .joy_do      ( joy_do_sgb  ),
+
+    .sgb_en      ( |sgb_en & isSGB_game & (~isGBC | status[35]) ),
+    .tint        ( tint[1]     ),
+    .isGBC_game  ( isGBC & isGBC_game ),
+
+    .lcd_on      ( lcd_on      ),
+    .lcd_clkena  ( lcd_clkena  ),
+    .lcd_data    ( lcd_data    ),
+    .lcd_data_gb ( lcd_data_gb ),
+    .lcd_mode    ( lcd_mode    ),
+    .lcd_vsync   ( lcd_vsync   ),
+
+    .h_cnt       ( h_cnt      ),
+    .v_cnt       ( v_cnt      ),
+    .h_end       ( h_end      ),
+
+    .border_download (sgb_border_download),
+    .ioctl_wr        (ioctl_wr),
+    .ioctl_addr      (ioctl_addr),
+    .ioctl_dout      (ioctl_dout),
+
+    .sgb_border_pix  ( sgb_border_pix  ),
+    .sgb_pal_en      ( sgb_pal_en      ),
+    .sgb_lcd_data    ( sgb_lcd_data    ),
+    .sgb_lcd_on      ( sgb_lcd_on      ),
+    .sgb_lcd_freeze  ( sgb_lcd_freeze  ),
+    .sgb_lcd_clkena  ( sgb_lcd_clkena  ),
+    .sgb_lcd_mode    ( sgb_lcd_mode    ),
+    .sgb_lcd_vsync   ( sgb_lcd_vsync   )
+);
+
+// Video
+  wire h_blank;
+  wire v_blank;
+  wire video_hs_gb;
+  wire video_vs_gb;
+  wire [23:0] video_rgb_gb;
+
+  reg video_de_reg;
+  reg video_hs_reg;
+  reg video_vs_reg;
+  reg [23:0] video_rgb_reg;
+
+  assign video_rgb_clock    = CLK_VIDEO;
+  assign video_rgb_clock_90 = CLK_VIDEO_90;
+  assign video_de           = video_de_reg;
+  assign video_hs           = video_hs_reg;
+  assign video_vs           = video_vs_reg;
+  assign video_rgb          = video_rgb_reg;
+
+  reg hs_prev;
+  reg [2:0] hs_delay;
+  reg vs_prev;
+  reg de_prev;
+
+  wire de = ~(h_blank || v_blank);
+  wire [23:0] video_slot_rgb = {9'b0, hide_overscan_with_region, square_pixels_s, 10'b0, 3'b0};
+
+  always @(posedge CLK_VIDEO) begin
+    video_hs_reg  <= 0;
+    video_de_reg  <= 0;
+    video_rgb_reg <= 24'h0;
+
+    if (de) begin
+      video_de_reg  <= 1;
+
+      video_rgb_reg <= video_rgb_gb;
+    end else if (de_prev && ~de) begin
+      video_rgb_reg <= video_slot_rgb;
+    end
+
+    if (hs_delay > 0) begin
+      hs_delay <= hs_delay - 1;
+    end
+
+    if (hs_delay == 1) begin
+      video_hs_reg <= 1;
+    end
+
+    if (~hs_prev && video_hs_gb) begin
+      // HSync went high. Delay by 3 cycles to prevent overlapping with VSync
+      hs_delay <= 7;
+    end
+
+    // Set VSync to be high for a single cycle on the rising edge of the VSync coming out of the core
+    video_vs_reg <= ~vs_prev && video_vs_gb;
+    hs_prev <= video_hs_gb;
+    vs_prev <= video_vs_gb;
+    de_prev <= de;
+  end
+
+//////////////////////////////// CE ////////////////////////////////////
+
+wire ce_cpu, ce_cpu2x;
+wire cart_act = cart_wr | cart_rd;
+
+wire fastforward = joystick_0[8] && !ioctl_download && !OSD_STATUS;
+wire ff_on;
+
+wire sleep_savestate;
+
+reg paused;
+always_ff @(posedge clk_sys) begin
+   paused <= sleep_savestate | (status[26] && OSD_STATUS && !ioctl_download && !reset && ~status[27]); // no pause when downloading rom, resetting or rewind capture is on
+end
+
+speedcontrol speedcontrol
+(
+    .clk_sys     (clk_sys),
+    .pause       (paused),
+    .speedup     (fast_forward),
+    .cart_act    (cart_act),
+    .DMA_on      (DMA_on),
+    .ce          (ce_cpu),
+    .ce_2x       (ce_cpu2x),
+    .refresh     (sdram_refresh_force),
+    .ff_on       (ff_on)
+);
+
+///////////////////////////// Fast Forward Latch /////////////////////////////////
+
+reg fast_forward;
+reg ff_latch;
+
+always @(posedge clk_sys) begin : ffwd
+    reg last_ffw;
+    reg ff_was_held;
+    longint ff_count;
+
+    last_ffw <= fastforward;
+
+    if (fastforward)
+        ff_count <= ff_count + 1;
+
+    if (~last_ffw & fastforward) begin
+        ff_latch <= 0;
+        ff_count <= 0;
+    end
+
+    if ((last_ffw & ~fastforward)) begin // 32mhz clock, 0.2 seconds
+        ff_was_held <= 0;
+
+        if (ff_count < 3200000 && ~ff_was_held) begin
+            ff_was_held <= 1;
+            ff_latch <= 1;
+        end
+    end
+
+    fast_forward <= (fastforward | ff_latch);
+end
+
 endmodule
