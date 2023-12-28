@@ -317,6 +317,57 @@ always @(*) begin
     endcase
 end
 
+reg [2:0] mapper_sel;
+reg [31:0] reset_delay = 0;
+reg rumble_en;
+reg [1:0] sys_type;
+reg ff_snd_en;
+reg [1:0] tint;
+reg [1:0] sgb_en;
+reg sgc_gbc_en;
+reg rw_en;
+
+always @(posedge clk_74a) begin
+    if (reset_delay > 0) begin
+      reset_delay <= reset_delay - 1;
+    end
+
+    if (bridge_wr) begin
+      casex (bridge_addr)
+        32'h050: begin
+          reset_delay <= 32'h100000;
+        end
+        // 32'h054: begin
+        //   region <= bridge_wr_data[1:0];
+        // end
+        32'h200: begin
+          mapper_sel <= bridge_wr_data[2:0];
+        end
+        32'h204: begin
+          rumble_en <= bridge_wr_data[0];
+        end
+        32'h208: begin
+          sys_type <= bridge_wr_data[1:0];
+        end
+        32'h20C: begin
+          ff_snd_en <= bridge_wr_data[0];
+        end
+        32'h210: begin
+          tint <= bridge_wr_data[1:0];
+        end
+        32'h214: begin
+          sgb_en <= bridge_wr_data[1:0];
+        end
+        32'h218: begin
+          sgc_gbc_en <= bridge_wr_data[0];
+        end
+        32'h21C: begin
+          rw_en <= bridge_wr_data[0];
+        end
+      endcase
+    end
+end
+
 //
 // host/target command handler
 //
@@ -487,6 +538,7 @@ wire    reset_n_s;
 
 synch_3 s01(pll_core_locked, pll_core_locked_s, clk_ram);
 synch_3 s02(reset_n, reset_n_s, clk_sys);
+synch_3 s03(external_reset, external_reset_s, clk_sys);
 
 mf_pllbase mp1
 (
@@ -502,6 +554,10 @@ mf_pllbase mp1
 
 wire CLK_VIDEO    = clk_ram;
 wire CLK_VIDEO_90 = clk_ram_90;
+
+
+wire external_reset = reset_delay > 0;
+wire external_reset_s;
 
 //////// Start GB/GBC Stuff ////////
 
@@ -522,13 +578,13 @@ wire [24:0] ioctl_addr;
 wire [15:0] ioctl_dout;
 wire        ioctl_wait;
 
-wire cart_download       = ioctl_download && (filetype[5:0] == 6'h01 || filetype == 8'h80);
-wire md_download         = ioctl_download && (filetype == 8'h81);
-wire palette_download    = ioctl_download && (filetype == 3 /*|| !filetype*/);
-wire sgb_border_download = ioctl_download && (filetype == 2);
-wire cgb_boot_download   = ioctl_download && (filetype == 4);
-wire dmg_boot_download   = ioctl_download && (filetype == 5);
-wire sgb_boot_download   = ioctl_download && (filetype == 6);
+wire cart_download       = ioctl_download && (dataslot_requestwrite_id[5:0] == 6'h01 || dataslot_requestwrite_id[7:0] == 8'h80);
+wire md_download         = ioctl_download && (dataslot_requestwrite_id[7:0] == 8'h81);
+wire palette_download    = ioctl_download && (dataslot_requestwrite_id == 3 /*|| !filetype*/);
+wire sgb_border_download = ioctl_download && (dataslot_requestwrite_id == 2);
+wire cgb_boot_download   = ioctl_download && (dataslot_requestwrite_id == 4);
+wire dmg_boot_download   = ioctl_download && (dataslot_requestwrite_id == 5);
+wire sgb_boot_download   = ioctl_download && (dataslot_requestwrite_id == 6);
 wire boot_download       = cgb_boot_download | dmg_boot_download | sgb_boot_download;
 
 
@@ -582,9 +638,8 @@ wire [31:0] RTC_timestampOut;
 wire [47:0] RTC_savedtimeOut;
 wire RTC_inuse;
 wire rumbling;
-wire [2:0] mapper_sel = status[41:39];
 
-assign joy0_rumble = {8'd0, ((rumbling & ~status[38]) ? 8'd128 : 8'd0)};
+assign joy0_rumble = {8'd0, ((rumbling & rumble_en) ? 8'd128 : 8'd0)};
 
 reg ce_32k; // 32768Hz clock for RTC
 reg [9:0] ce_32k_div;
@@ -659,7 +714,7 @@ cart_top cart (
     .SaveStateExt_rst ( 0 ),
     .SaveStateExt_Dout( ),
     .savestate_load   ( 0 ),
-    .sleep_savestate  ( 0 ),
+    .sleep_savestate  ( sleep_savestate ),
 
     .Savestate_CRAMAddr     ( 0 ),
     .Savestate_CRAMRWrEn    ( 0 ),
@@ -686,11 +741,15 @@ wire lcd_vsync;
 
 wire DMA_on;
 
-wire reset = (~reset_n_s | status[0] | buttons[1] | cart_download | boot_download | bk_loading);
+wire reset = (~reset_n_s | external_reset_s | cart_download | boot_download);
 wire speed;
 reg megaduck = 0;
 
 reg isGBC = 0;
+wire sys_auto     = (sys_type == 0);
+wire sys_gbc      = (sys_type == 2);
+wire sys_megaduck = (sys_type == 3);
+
 always @(posedge clk_sys) if(reset) begin
     if (cart_download)
         megaduck <= sys_megaduck;
@@ -699,8 +758,8 @@ always @(posedge clk_sys) if(reset) begin
 
     if(~sys_auto) isGBC <= sys_gbc;
     else if(cart_download) begin
-        if (!filetype[5:0]) isGBC <= isGBC_game;
-        else isGBC <= !filetype[7:6];
+        if (!dataslot_requestwrite_id[5:0]) isGBC <= isGBC_game;
+        else isGBC <= !dataslot_requestwrite_id[7:6];
     end
 end
 
@@ -772,7 +831,7 @@ gb gb
     .gg_reset               (0),
     .gg_en                  (0),
     .gg_code                (0),
-    .gg_available           (0),
+    .gg_available           (),
     
     // savestates
     .increaseSSHeaderCount  (0),
@@ -780,7 +839,7 @@ gb gb
     .save_state             (0),
     .load_state             (0),
     .savestate_number       (0),
-    .sleep_savestate        (),
+    .sleep_savestate        (sleep_savestate),
     
     .SaveStateExt_Din       (),
     .SaveStateExt_Adr       (),
@@ -802,8 +861,8 @@ gb gb
     .SAVE_out_be            (),            
     .SAVE_out_done          (0),            // should be one cycle high when write is done or read value is valid
     
-    .rewind_on              (status[27]),
-    .rewind_active          (status[27] & joystick_0[10])
+    .rewind_on              (rw_en),
+    .rewind_active          (rw_en & cont1_key[10])
 );
 
 // Sound
@@ -811,8 +870,8 @@ gb gb
 wire [15:0] audio_l, audio_r;
 reg  [15:0] audio_buffer_l = 0, audio_buffer_r = 0;
 
-assign audio_l = (fast_forward && status[25]) ? 16'd0 : GB_AUDIO_L;
-assign audio_r = (fast_forward && status[25]) ? 16'd0 : GB_AUDIO_R;
+assign audio_l = (fast_forward && ~ff_snd_en) ? 16'd0 : GB_AUDIO_L;
+assign audio_r = (fast_forward && ~ff_snd_en) ? 16'd0 : GB_AUDIO_R;
 
 // Buffer audio to have better fitting on audio route
 always @(posedge clk_sys) begin
@@ -826,8 +885,6 @@ audio_mixer #(
 ) audio_mixer (
   .clk_74b  (clk_74b),
   .clk_audio(clk_sys),
-
-  // .reset()
 
   .vol_att(0),
   .mix(0),
@@ -844,7 +901,6 @@ audio_mixer #(
 // the lcd to vga converter
 wire ce_pix;
 wire [8:0] h_cnt, v_cnt;
-wire [1:0] tint = status[2:1];
 wire h_end;
 
 lcd lcd
@@ -858,16 +914,16 @@ lcd lcd
     .mode   ( sgb_lcd_mode   ),  // used to detect begin of new lines and frames
     .on     ( sgb_lcd_on     ),
     .lcd_vs ( sgb_lcd_vsync  ),
-    .shadow ( status[36]     ),
+    .shadow ( 0     ),
 
     .isGBC  ( isGBC      ),
 
     .tint   ( |tint       ),
-    .inv    ( status[12]  ),
-    .double_buffer( status[5]),
-    .frame_blend( status[16] ),
-    .originalcolors( status[30] ),
-    .analog_wide ( status[34] ),
+    .inv    ( 0  ),
+    .double_buffer( 0 ),
+    .frame_blend( 0 ),
+    .originalcolors( 0 ),
+    .analog_wide ( 0 ),
 
     // Palettes
     .pal1   (palette[127:104]),
@@ -901,7 +957,6 @@ wire [15:0] sgb_border_pix;
 wire sgb_lcd_clkena, sgb_lcd_on, sgb_lcd_vsync, sgb_lcd_freeze;
 wire [1:0] sgb_lcd_mode;
 wire sgb_pal_en;
-wire [1:0] sgb_en = status[24:23];
 wire sgb_border_en = sgb_en[1];
 
 sgb sgb (
@@ -919,7 +974,7 @@ sgb sgb (
     .joy_p54     ( joy_p54     ),
     .joy_do      ( joy_do_sgb  ),
 
-    .sgb_en      ( |sgb_en & isSGB_game & (~isGBC | status[35]) ),
+    .sgb_en      ( |sgb_en & isSGB_game & (~isGBC | sgc_gbc_en) ),
     .tint        ( tint[1]     ),
     .isGBC_game  ( isGBC & isGBC_game ),
 
@@ -974,7 +1029,6 @@ sgb sgb (
   reg de_prev;
 
   wire de = ~(h_blank || v_blank);
-  wire [23:0] video_slot_rgb = {9'b0, hide_overscan_with_region, square_pixels_s, 10'b0, 3'b0};
 
   always @(posedge CLK_VIDEO) begin
     video_hs_reg  <= 0;
@@ -986,7 +1040,7 @@ sgb sgb (
 
       video_rgb_reg <= video_rgb_gb;
     end else if (de_prev && ~de) begin
-      video_rgb_reg <= video_slot_rgb;
+      video_rgb_reg <= 24'h0;
     end
 
     if (hs_delay > 0) begin
@@ -1014,14 +1068,14 @@ sgb sgb (
 wire ce_cpu, ce_cpu2x;
 wire cart_act = cart_wr | cart_rd;
 
-wire fastforward = joystick_0[8] && !ioctl_download && !OSD_STATUS;
+wire fastforward = cont1_key[8] && !ioctl_download;
 wire ff_on;
 
 wire sleep_savestate;
 
 reg paused;
 always_ff @(posedge clk_sys) begin
-   paused <= sleep_savestate | (status[26] && OSD_STATUS && !ioctl_download && !reset && ~status[27]); // no pause when downloading rom, resetting or rewind capture is on
+   paused <= sleep_savestate | (!ioctl_download && !reset && ~rw_en); // no pause when downloading rom, resetting or rewind capture is on
 end
 
 speedcontrol speedcontrol

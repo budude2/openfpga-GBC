@@ -1,0 +1,8 @@
+set_global_assignment -name SYSTEMVERILOG_FILE        [file join $::quartus(qip_path) "audio_mixer.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE        [file join $::quartus(qip_path) "filters/audio_filters.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE        [file join $::quartus(qip_path) "filters/audio_mix.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE        [file join $::quartus(qip_path) "filters/dc_blocker.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE        [file join $::quartus(qip_path) "filters/filter_loader.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE        [file join $::quartus(qip_path) "filters/filters_rom.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE        [file join $::quartus(qip_path) "filters/iir_filter_tap.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE        [file join $::quartus(qip_path) "filters/iir_filter.sv"]
