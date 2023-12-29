@@ -559,7 +559,8 @@ wire external_reset = reset_delay > 0;
 wire external_reset_s;
 
 data_loader #(
-  .ADDRESS_MASK_UPPER_4(4'h1)
+  .ADDRESS_MASK_UPPER_4(4'h1),
+  .OUTPUT_WORD_SIZE(1)
 ) data_loader (
   .clk_74a(clk_74a),
   .clk_memory(clk_sys),
@@ -576,6 +577,13 @@ data_loader #(
 
 //////// Start GB/GBC Stuff ////////
 
+reg ioctl_download = 0;
+
+always @(posedge clk_74a) begin
+    if (dataslot_requestwrite) ioctl_download <= 1;
+    else if (dataslot_allcomplete) ioctl_download <= 0;
+end
+
 wire [15:0] joy0_rumble;
 
 wire [14:0] cart_addr;
@@ -587,7 +595,6 @@ wire cart_oe;
 wire [7:0] cart_di, cart_do;
 wire nCS; // WRAM or Cart RAM CS
 
-wire        ioctl_download;
 wire        ioctl_wr;
 wire [24:0] ioctl_addr;
 wire [15:0] ioctl_dout;
@@ -855,7 +862,8 @@ gb gb
     .load_state             (0),
     .savestate_number       (0),
     .sleep_savestate        (sleep_savestate),
-    
+    //.sleep_savestate        (),
+
     .SaveStateExt_Din       (),
     .SaveStateExt_Adr       (),
     .SaveStateExt_wren      (),
@@ -1090,7 +1098,7 @@ wire sleep_savestate;
 
 reg paused;
 always_ff @(posedge clk_sys) begin
-   paused <= sleep_savestate | (!ioctl_download && !reset && ~rw_en); // no pause when downloading rom, resetting or rewind capture is on
+   paused <= sleep_savestate;
 end
 
 speedcontrol speedcontrol
