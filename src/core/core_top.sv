@@ -530,7 +530,7 @@ core_bridge_cmd icb (
 
 );
 
-wire clk_sys, clk_ram, clk_ram_90;
+wire clk_sys, clk_ram, clk_ram_90, clk_vid, clk_vid_90;
 
 wire    pll_core_locked;
 wire    pll_core_locked_s;
@@ -546,14 +546,14 @@ mf_pllbase mp1
     .rst            ( 0 ),
     
     .outclk_0       ( clk_ram ),
-    .outclk_1       ( clk_ram_90 ),
-    .outclk_2       ( clk_sys ),
+    .outclk_1       ( clk_sys ),
+    .outclk_2       ( clk_vid ),
+    .outclk_3       ( clk_vid_90 ),
     
     .locked         ( pll_core_locked )
 );
 
 wire CLK_VIDEO    = clk_ram;
-wire CLK_VIDEO_90 = clk_ram_90;
 
 wire external_reset = reset_delay > 0;
 wire external_reset_s;
@@ -906,19 +906,19 @@ audio_mixer #(
   .DW(16),
   .STEREO(0)
 ) audio_mixer (
-  .clk_74b  (clk_74b),
-  .clk_audio(clk_sys),
+  .clk_74b      (clk_74b),
+  .clk_audio    (clk_sys),
 
-  .vol_att(0),
-  .mix(0),
+  .vol_att      (0),
+  .mix          (0),
 
-  .is_signed(0),
-  .core_l(audio_buffer_l),
-  .core_r(audio_buffer_r),
+  .is_signed    (0),
+  .core_l       (audio_buffer_l),
+  .core_r       (audio_buffer_r),
 
-  .audio_mclk(audio_mclk),
-  .audio_lrck(audio_lrck),
-  .audio_dac (audio_dac)
+  .audio_mclk   (audio_mclk),
+  .audio_lrck   (audio_lrck),
+  .audio_dac    (audio_dac)
 );
 
 // the lcd to vga converter
@@ -929,48 +929,48 @@ wire h_end;
 lcd lcd
 (
     // serial interface
-    .clk_sys( clk_sys    ),
-    .ce     ( ce_cpu     ),
+    .clk_sys        ( clk_sys    ),
+    .ce             ( ce_cpu     ),
 
-    .lcd_clkena ( sgb_lcd_clkena ),
-    .data   ( sgb_lcd_data   ),
-    .mode   ( sgb_lcd_mode   ),  // used to detect begin of new lines and frames
-    .on     ( sgb_lcd_on     ),
-    .lcd_vs ( sgb_lcd_vsync  ),
-    .shadow ( 0     ),
+    .lcd_clkena     ( sgb_lcd_clkena ),
+    .data           ( sgb_lcd_data   ),
+    .mode           ( sgb_lcd_mode   ),  // used to detect begin of new lines and frames
+    .on             ( sgb_lcd_on     ),
+    .lcd_vs         ( sgb_lcd_vsync  ),
+    .shadow         ( 0     ),
 
-    .isGBC  ( isGBC      ),
+    .isGBC          ( isGBC      ),
 
-    .tint   ( |tint       ),
-    .inv    ( 0  ),
-    .double_buffer( 0 ),
-    .frame_blend( 0 ),
-    .originalcolors( 0 ),
-    .analog_wide ( 0 ),
+    .tint           ( |tint       ),
+    .inv            ( 0  ),
+    .double_buffer  ( 0 ),
+    .frame_blend    ( 0 ),
+    .originalcolors ( 0 ),
+    .analog_wide    ( 0 ),
 
     // Palettes
-    .pal1   (palette[127:104]),
-    .pal2   (palette[103:80]),
-    .pal3   (palette[79:56]),
-    .pal4   (palette[55:32]),
+    .pal1           (palette[127:104]),
+    .pal2           (palette[103:80]),
+    .pal3           (palette[79:56]),
+    .pal4           (palette[55:32]),
 
     .sgb_border_pix ( sgb_border_pix),
     .sgb_pal_en     ( sgb_pal_en ),
     .sgb_en         ( sgb_border_en ),
     .sgb_freeze     ( sgb_lcd_freeze),
 
-    .clk_vid( CLK_VIDEO  ),
-    .hs     ( video_hs_gb   ),
-    .vs     ( video_vs_gb   ),
-    .hbl    ( h_blank    ),
-    .vbl    ( v_blank    ),
-    .r      ( video_rgb_gb[23:16] ),
-    .g      ( video_rgb_gb[15:8]  ),
-    .b      ( video_rgb_gb[7:0]   ),
-    .ce_pix ( ce_pix     ),
-    .h_cnt  ( h_cnt      ),
-    .v_cnt  ( v_cnt      ),
-    .h_end  ( h_end      )
+    .clk_vid        ( CLK_VIDEO  ),
+    .hs             ( video_hs_gb   ),
+    .vs             ( video_vs_gb   ),
+    .hbl            ( h_blank    ),
+    .vbl            ( v_blank    ),
+    .r              ( video_rgb_gb[23:16] ),
+    .g              ( video_rgb_gb[15:8]  ),
+    .b              ( video_rgb_gb[7:0]   ),
+    .ce_pix         ( ce_pix     ),
+    .h_cnt          ( h_cnt      ),
+    .v_cnt          ( v_cnt      ),
+    .h_end          ( h_end      )
 );
 
 wire [1:0] joy_p54;
@@ -983,48 +983,48 @@ wire sgb_pal_en;
 wire sgb_border_en = sgb_en[1];
 
 sgb sgb (
-    .reset       ( reset       ),
-    .clk_sys     ( clk_sys     ),
-    .ce          ( ce_cpu      ),
+    .reset              ( reset       ),
+    .clk_sys            ( clk_sys     ),
+    .ce                 ( ce_cpu      ),
 
-    .clk_vid     ( CLK_VIDEO   ),
-    .ce_pix      ( ce_pix      ),
+    .clk_vid            ( CLK_VIDEO   ),
+    .ce_pix             ( ce_pix      ),
 
-    .joystick_0  ( cont1_key  ),
-    .joystick_1  ( cont2_key  ),
-    .joystick_2  ( cont3_key  ),
-    .joystick_3  ( cont4_key  ),
-    .joy_p54     ( joy_p54     ),
-    .joy_do      ( joy_do_sgb  ),
+    .joystick_0         ( cont1_key  ),
+    .joystick_1         ( cont2_key  ),
+    .joystick_2         ( cont3_key  ),
+    .joystick_3         ( cont4_key  ),
+    .joy_p54            ( joy_p54     ),
+    .joy_do             ( joy_do_sgb  ),
 
-    .sgb_en      ( |sgb_en & isSGB_game & (~isGBC | sgc_gbc_en) ),
-    .tint        ( tint[1]     ),
-    .isGBC_game  ( isGBC & isGBC_game ),
+    .sgb_en             ( |sgb_en & isSGB_game & (~isGBC | sgc_gbc_en) ),
+    .tint               ( tint[1]     ),
+    .isGBC_game         ( isGBC & isGBC_game ),
 
-    .lcd_on      ( lcd_on      ),
-    .lcd_clkena  ( lcd_clkena  ),
-    .lcd_data    ( lcd_data    ),
-    .lcd_data_gb ( lcd_data_gb ),
-    .lcd_mode    ( lcd_mode    ),
-    .lcd_vsync   ( lcd_vsync   ),
+    .lcd_on             ( lcd_on      ),
+    .lcd_clkena         ( lcd_clkena  ),
+    .lcd_data           ( lcd_data    ),
+    .lcd_data_gb        ( lcd_data_gb ),
+    .lcd_mode           ( lcd_mode    ),
+    .lcd_vsync          ( lcd_vsync   ),
 
-    .h_cnt       ( h_cnt      ),
-    .v_cnt       ( v_cnt      ),
-    .h_end       ( h_end      ),
+    .h_cnt              ( h_cnt      ),
+    .v_cnt              ( v_cnt      ),
+    .h_end              ( h_end      ),
 
-    .border_download (sgb_border_download),
-    .ioctl_wr        (ioctl_wr),
-    .ioctl_addr      (ioctl_addr),
-    .ioctl_dout      (ioctl_dout),
+    .border_download    (sgb_border_download),
+    .ioctl_wr           (ioctl_wr),
+    .ioctl_addr         (ioctl_addr),
+    .ioctl_dout         (ioctl_dout),
 
-    .sgb_border_pix  ( sgb_border_pix  ),
-    .sgb_pal_en      ( sgb_pal_en      ),
-    .sgb_lcd_data    ( sgb_lcd_data    ),
-    .sgb_lcd_on      ( sgb_lcd_on      ),
-    .sgb_lcd_freeze  ( sgb_lcd_freeze  ),
-    .sgb_lcd_clkena  ( sgb_lcd_clkena  ),
-    .sgb_lcd_mode    ( sgb_lcd_mode    ),
-    .sgb_lcd_vsync   ( sgb_lcd_vsync   )
+    .sgb_border_pix     ( sgb_border_pix  ),
+    .sgb_pal_en         ( sgb_pal_en      ),
+    .sgb_lcd_data       ( sgb_lcd_data    ),
+    .sgb_lcd_on         ( sgb_lcd_on      ),
+    .sgb_lcd_freeze     ( sgb_lcd_freeze  ),
+    .sgb_lcd_clkena     ( sgb_lcd_clkena  ),
+    .sgb_lcd_mode       ( sgb_lcd_mode    ),
+    .sgb_lcd_vsync      ( sgb_lcd_vsync   )
 );
 
 // Video
@@ -1039,13 +1039,6 @@ sgb sgb (
   reg video_vs_reg;
   reg [23:0] video_rgb_reg;
 
-  assign video_rgb_clock    = CLK_VIDEO;
-  assign video_rgb_clock_90 = CLK_VIDEO_90;
-  assign video_de           = video_de_reg;
-  assign video_hs           = video_hs_reg;
-  assign video_vs           = video_vs_reg;
-  assign video_rgb          = video_rgb_reg;
-
   reg hs_prev;
   reg [2:0] hs_delay;
   reg vs_prev;
@@ -1053,7 +1046,15 @@ sgb sgb (
 
   wire de = ~(h_blank || v_blank);
 
-  always @(posedge CLK_VIDEO) begin
+  // reg HSync, VSync;
+  // always @(posedge clk_vid) begin
+  //     if(ce_pix) begin
+  //         HSync <= video_hs_gb;
+  //         if(~HSync & video_hs) VSync <= video_vs_gb;
+  //     end
+  // end
+
+  always @(posedge clk_vid) begin
     video_hs_reg  <= 0;
     video_de_reg  <= 0;
     video_rgb_reg <= 24'h0;
@@ -1085,6 +1086,13 @@ sgb sgb (
     vs_prev <= video_vs_gb;
     de_prev <= de;
   end
+
+  assign video_rgb_clock    = clk_vid;
+  assign video_rgb_clock_90 = clk_vid_90;
+  assign video_de           = video_de_reg;
+  assign video_hs           = video_hs_reg;
+  assign video_vs           = video_vs_reg;
+  assign video_rgb          = video_rgb_reg;
 
 //////////////////////////////// CE ////////////////////////////////////
 
