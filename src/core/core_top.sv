@@ -1005,7 +1005,7 @@ sgb sgb (
     .clk_vid            ( CLK_VIDEO   ),
     .ce_pix             ( ce_pix      ),
 
-    .joystick_0         ( cont1_key  ),
+    .joystick_0         ( {cont1_key[15], cont1_key[14], cont1_key[5], cont1_key[4], cont1_key[0], cont1_key[1], cont1_key[2], cont1_key[3]} ),
     .joystick_1         ( cont2_key  ),
     .joystick_2         ( cont3_key  ),
     .joystick_3         ( cont4_key  ),
