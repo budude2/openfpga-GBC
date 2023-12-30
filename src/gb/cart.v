@@ -70,8 +70,21 @@ module cart_top (
 	input         Savestate_CRAMRWrEn,
 	input   [7:0] Savestate_CRAMWriteData,
 	output  [7:0] Savestate_CRAMReadData,
-	output        rumbling
-);
+	output        rumbling,
+
+    output  [21:16] cram_a,
+    inout   [15:0]  cram_dq,
+    input           cram_wait,
+    output          cram_clk,
+    output          cram_adv_n,
+    output          cram_cre,
+    output          cram_ce0_n,
+    output          cram_ce1_n,
+    output          cram_oe_n,
+    output          cram_we_n,
+    output          cram_ub_n,
+    output          cram_lb_n
+    );
 ///////////////////////////////////////////////////
 
 
@@ -421,32 +434,65 @@ assign ram_mask_file =              // 0 - no ram
 assign has_save = mbc_battery && (cart_ram_size > 0 || mbc2 || mbc7 || tama);
 
 // Up to 8kb * 16banks of Cart Ram (128kb)
-dpram #(16) cram_l (
-	.clock_a (clk_sys),
-	.address_a (cram_addr[16:1]),
-	.wren_a (cram_wr & ~cram_addr[0]),
-	.data_a (cram_di),
-	.q_a (cram_q_l),
+// dpram #(16) cram_l (
+// 	.clock_a (clk_sys),
+// 	.address_a (cram_addr[16:1]),
+// 	.wren_a (cram_wr & ~cram_addr[0]),
+// 	.data_a (cram_di),
+// 	.q_a (cram_q_l),
 
-	.clock_b (clk_sys),
-	.address_b (bk_addr[15:0]),
-	.wren_b (bk_wr),
-	.data_b (bk_data[7:0]),
-	.q_b (bk_q[7:0])
-);
+// 	.clock_b (clk_sys),
+// 	.address_b (bk_addr[15:0]),
+// 	.wren_b (bk_wr),
+// 	.data_b (bk_data[7:0]),
+// 	.q_b (bk_q[7:0])
+// );
 
-dpram #(16) cram_h (
-	.clock_a (clk_sys),
-	.address_a (cram_addr[16:1]),
-	.wren_a (cram_wr & cram_addr[0]),
-	.data_a (cram_di),
-	.q_a (cram_q_h),
+// dpram #(16) cram_h (
+// 	.clock_a (clk_sys),
+// 	.address_a (cram_addr[16:1]),
+// 	.wren_a (cram_wr & cram_addr[0]),
+// 	.data_a (cram_di),
+// 	.q_a (cram_q_h),
 
-	.clock_b (clk_sys),
-	.address_b (bk_addr[15:0]),
-	.wren_b (bk_wr),
-	.data_b (bk_data[15:8]),
-	.q_b (bk_q[15:8])
+// 	.clock_b (clk_sys),
+// 	.address_b (bk_addr[15:0]),
+// 	.wren_b (bk_wr),
+// 	.data_b (bk_data[15:8]),
+// 	.q_b (bk_q[15:8])
+// );
+
+wire [15:0] psram_dout;
+
+assign cram_q_h = psram_dout[15:8];
+assign cram_q_l = psram_dout[7:0];
+
+psram psram
+(
+    .clk(clk_sys),
+    .bank_sel(0),
+    .addr(cram_addr[16:1]),
+    .write_en(cram_wr),
+    .write_high_byte(cram_addr[0]),
+    .write_low_byte(~cram_addr[0]),
+    .read_en(1),
+    .read_avail(),
+
+    .data_in({cram_di, cram_di}),
+    .data_out(psram_dout),
+
+    .cram_a(cram_a),
+    .cram_dq(cram_dq),
+    .cram_wait(cram_wait),
+    .cram_clk(cram_clk),
+    .cram_adv_n(cram_adv_n),
+    .cram_cre(cram_cre),
+    .cram_ce0_n(cram_ce0_n),
+    .cram_ce1_n(cram_ce1_n),
+    .cram_oe_n(cram_oe_n),
+    .cram_we_n(cram_we_n),
+    .cram_ub_n(cram_ub_n),
+    .cram_lb_n(cram_lb_n)
 );
 
 endmodule

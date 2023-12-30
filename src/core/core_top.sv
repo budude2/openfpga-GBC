@@ -261,17 +261,17 @@ assign port_tran_sd      = 1'bz;
 assign port_tran_sd_dir  = 1'b0;     // SD is input and not used
 
 // tie off the rest of the pins we are not using
-assign cram0_a     = 'h0;
-assign cram0_dq    = {16{1'bZ}};
-assign cram0_clk   = 0;
-assign cram0_adv_n = 1;
-assign cram0_cre   = 0;
-assign cram0_ce0_n = 1;
-assign cram0_ce1_n = 1;
-assign cram0_oe_n  = 1;
-assign cram0_we_n  = 1;
-assign cram0_ub_n  = 1;
-assign cram0_lb_n  = 1;
+// assign cram0_a     = 'h0;
+// assign cram0_dq    = {16{1'bZ}};
+// assign cram0_clk   = 0;
+// assign cram0_adv_n = 1;
+// assign cram0_cre   = 0;
+// assign cram0_ce0_n = 1;
+// assign cram0_ce1_n = 1;
+// assign cram0_oe_n  = 1;
+// assign cram0_we_n  = 1;
+// assign cram0_ub_n  = 1;
+// assign cram0_lb_n  = 1;
 
 assign cram1_a     = 'h0;
 assign cram1_dq    = {16{1'bZ}};
@@ -560,7 +560,8 @@ wire external_reset_s;
 
 data_loader #(
   .ADDRESS_MASK_UPPER_4(4'h1),
-  .OUTPUT_WORD_SIZE(1)
+  .OUTPUT_WORD_SIZE(2),
+  .WRITE_MEM_CLOCK_DELAY(20)
 ) data_loader (
   .clk_74a(clk_74a),
   .clk_memory(clk_sys),
@@ -744,7 +745,20 @@ cart_top cart
     .Savestate_CRAMWriteData    ( 0                 ),
     .Savestate_CRAMReadData     (                   ),
     
-    .rumbling                   ( rumbling          )
+    .rumbling                   ( rumbling          ),
+
+    .cram_a(cram0_a),
+    .cram_dq(cram0_dq),
+    .cram_wait(cram0_wait),
+    .cram_clk(cram0_clk),
+    .cram_adv_n(cram0_adv_n),
+    .cram_cre(cram0_cre),
+    .cram_ce0_n(cram0_ce0_n),
+    .cram_ce1_n(cram0_ce1_n),
+    .cram_oe_n(cram0_oe_n),
+    .cram_we_n(cram0_we_n),
+    .cram_ub_n(cram0_ub_n),
+    .cram_lb_n(cram0_lb_n),
 );
 
 reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
@@ -905,7 +919,7 @@ end
 
 audio_mixer #(
   .DW(16),
-  .STEREO(0)
+  .STEREO(1)
 ) audio_mixer (
   .clk_74b      (clk_74b),
   .clk_audio    (clk_sys),
