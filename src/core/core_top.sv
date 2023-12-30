@@ -927,7 +927,7 @@ audio_mixer #(
   .vol_att      (0),
   .mix          (0),
 
-  .is_signed    (0),
+  .is_signed    (1),
   .core_l       (audio_buffer_l),
   .core_r       (audio_buffer_r),
 
