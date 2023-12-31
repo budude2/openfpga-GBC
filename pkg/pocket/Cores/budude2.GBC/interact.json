@@ -42,17 +42,6 @@
         ]
       },
       {
-        "name": "Rumble",
-        "id": 12,
-        "type": "check",
-        "enabled": true,
-        "address": "0x204",
-        "persist": true,
-        "writeonly": true,
-        "defaultval": 1,
-        "value": 1
-      },
-      {
         "name": "System Select",
         "id": 13,
         "type": "list",
@@ -80,7 +69,7 @@
         ]
       },
       {
-        "name": "Enable Fastfoward Sound",
+        "name": "Enable FF Sound",
         "id": 14,
         "type": "check",
         "enabled": true,
@@ -88,7 +77,8 @@
         "persist": true,
         "writeonly": true,
         "defaultval": 0,
-        "value": 1
+        "value": 1,
+        "value_off": 0
       },
       {
         "name": "Custom Palette",
@@ -145,18 +135,8 @@
         "persist": false,
         "writeonly": true,
         "defaultval": 0,
-        "value": 1
-      },
-      {
-        "name": "Enable Rewind",
-        "id": 19,
-        "type": "check",
-        "enabled": false,
-        "address": "0x21C",
-        "persist": true,
-        "writeonly": true,
-        "defaultval": 0,
-        "value": 1
+        "value": 1,
+        "value_off": 0
       }
     ],
     "messages": []

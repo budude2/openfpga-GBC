@@ -306,11 +306,6 @@ always @(*) begin
     default: begin
         bridge_rd_data <= 0;
     end
-    32'h10xxxxxx: begin
-        // example
-        // bridge_rd_data <= example_device_data;
-        bridge_rd_data <= 0;
-    end
     32'hF8xxxxxx: begin
         bridge_rd_data <= cmd_bridge_rd_data;
     end
@@ -337,9 +332,6 @@ always @(posedge clk_74a) begin
         32'h050: begin
           reset_delay <= 32'h100000;
         end
-        // 32'h054: begin
-        //   region <= bridge_wr_data[1:0];
-        // end
         32'h200: begin
           mapper_sel <= bridge_wr_data[2:0];
           reset_delay <= 32'h100000;
