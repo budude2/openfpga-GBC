@@ -95,7 +95,9 @@ input   wire    [31:0]  target_buffer_resp_struct,  // bus address of the memory
 input   wire    [9:0]   datatable_addr,
 input   wire            datatable_wren,
 input   wire    [31:0]  datatable_data,
-output  wire    [31:0]  datatable_q
+output  wire    [31:0]  datatable_q,
+
+output reg              bw_en
 
 );
 
@@ -447,6 +449,17 @@ always @(posedge clk) begin
             // OS Notify: Menu State
             osnotify_inmenu <= host_20[0];
             hstate <= ST_DONE_OK;
+        end
+        16'h00B8: begin
+            // Enable BW
+            bw_en <= host_20[0];
+
+            if(host_20[0]) begin
+                host_40 <= 16'h444D;
+                hstate  <= ST_DONE_OK;
+            end else begin
+                hstate  <= ST_DONE_OK;
+            end
         end
         default: begin
             hstate <= ST_DONE_ERR;

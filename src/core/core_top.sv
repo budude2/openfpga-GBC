@@ -306,6 +306,9 @@ always @(*) begin
     default: begin
         bridge_rd_data <= 0;
     end
+    32'hF80000B8: begin
+        bridge_rd_data <= 16'h444D;
+    end
     32'hF8xxxxxx: begin
         bridge_rd_data <= cmd_bridge_rd_data;
     end
@@ -443,6 +446,8 @@ end
     wire    [31:0]  datatable_data;
     wire    [31:0]  datatable_q;
 
+    wire            bw_en;
+
 core_bridge_cmd icb (
 
     .clk                        ( clk_74a                    ),
@@ -520,7 +525,9 @@ core_bridge_cmd icb (
     .datatable_addr             ( datatable_addr             ),
     .datatable_wren             ( datatable_wren             ),
     .datatable_data             ( datatable_data             ),
-    .datatable_q                ( datatable_q                )
+    .datatable_q                ( datatable_q                ),
+
+    .bw_en                      ( bw_en )
 
 );
 
@@ -1096,7 +1103,10 @@ sgb sgb (
   assign video_de           = video_de_reg;
   assign video_hs           = video_hs_reg;
   assign video_vs           = video_vs_reg;
-  assign video_rgb          = video_rgb_reg;
+
+  wire [7:0] lum;
+  assign lum = (video_rgb_reg[23:16]>>2) + (video_rgb_reg[23:16]>>5) + (video_rgb_reg[15:8]>>1) + (video_rgb_reg[15:8]>>4) + (video_rgb_reg[7:0]>>4) + (video_rgb_reg[7:0]>>5);
+  assign video_rgb = bw_en ? {lum, lum, lum} : video_rgb_reg;
 
 //////////////////////////////// CE ////////////////////////////////////
 
