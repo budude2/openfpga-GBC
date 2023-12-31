@@ -342,12 +342,14 @@ always @(posedge clk_74a) begin
         // end
         32'h200: begin
           mapper_sel <= bridge_wr_data[2:0];
+          reset_delay <= 32'h100000;
         end
         32'h204: begin
           rumble_en <= bridge_wr_data[0];
         end
         32'h208: begin
           sys_type <= bridge_wr_data[1:0];
+          reset_delay <= 32'h100000;
         end
         32'h20C: begin
           ff_snd_en <= bridge_wr_data[0];
@@ -793,10 +795,13 @@ always @(posedge clk_sys) if(reset) begin
     if (md_download)
         megaduck <= sys_auto || sys_megaduck;
 
-    if(~sys_auto) isGBC <= sys_gbc;
+    if(~sys_auto)
+        isGBC <= sys_gbc;
     else if(cart_download) begin
-        if (!dataslot_requestwrite_id[5:0]) isGBC <= isGBC_game;
-        else isGBC <= !dataslot_requestwrite_id[7:6];
+        if (!dataslot_requestwrite_id[5:0])
+            isGBC <= isGBC_game;
+        else
+            isGBC <= !dataslot_requestwrite_id[7:6];
     end
 end
 

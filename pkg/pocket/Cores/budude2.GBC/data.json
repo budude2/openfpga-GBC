@@ -4,10 +4,10 @@
     "data_slots": [
       {
         "name": "Cartridge",
-        "id": 0,
-        "required": false,
+        "id": 1,
+        "required": true,
         "parameters": "0x109",
-        "extensions": ["gbc"],
+        "extensions": ["gbc", "gb"],
         "address": "0x10000000"
       },
       {
@@ -15,11 +15,9 @@
         "filename": "gbc_bios.bin",
         "id": 4,
         "required": true,
-        "parameters": 137,
+        "parameters": 136,
         "nonvolatile": false,
-        "extensions": [
-            "bin"
-        ],
+        "extensions": ["bin"],
         "size_exact": 2304,
         "size_maximum": 2304,
         "address": "0x10000000"
@@ -29,11 +27,9 @@
         "filename": "gb_bios.bin",
         "id": 5,
         "required": true,
-        "parameters": 137,
+        "parameters": 136,
         "nonvolatile": false,
-        "extensions": [
-            "bin"
-        ],
+        "extensions": ["bin"],
         "size_exact": 256,
         "size_maximum": 256,
         "address": "0x10000000"

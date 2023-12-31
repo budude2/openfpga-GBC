@@ -9,6 +9,154 @@
         "enabled": true,
         "address": "0x50",
         "value": 1
+      },
+      {
+        "name": "Mapper Select",
+        "id": 11,
+        "type": "list",
+        "enabled": true,
+        "writeonly": true,
+        "address": "0x200",
+        "defaultval": 0,
+        "options": [
+          {
+            "value": 0,
+            "name": "Auto"
+          },
+          {
+            "value": 1,
+            "name": "WisdomTree"
+          },
+          {
+            "value": 2,
+            "name": "Mani161"
+          },
+          {
+            "value": 3,
+            "name": "MBC1"
+          },
+          {
+            "value": 4,
+            "name": "MBC3"
+          }
+        ]
+      },
+      {
+        "name": "Rumble",
+        "id": 12,
+        "type": "check",
+        "enabled": true,
+        "address": "0x204",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 1,
+        "value": 1
+      },
+      {
+        "name": "System Select",
+        "id": 13,
+        "type": "list",
+        "enabled": true,
+        "writeonly": true,
+        "address": "0x208",
+        "defaultval": 0,
+        "options": [
+          {
+            "value": 0,
+            "name": "Auto"
+          },
+          {
+            "value": 1,
+            "name": "Gameboy"
+          },
+          {
+            "value": 2,
+            "name": "Gameboy Color"
+          },
+          {
+            "value": 3,
+            "name": "MegaDuck"
+          }
+        ]
+      },
+      {
+        "name": "Enable Fastfoward Sound",
+        "id": 14,
+        "type": "check",
+        "enabled": true,
+        "address": "0x20C",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 0,
+        "value": 1
+      },
+      {
+        "name": "Custom Palette",
+        "id": 15,
+        "type": "list",
+        "enabled": true,
+        "writeonly": true,
+        "address": "0x210",
+        "defaultval": 0,
+        "options": [
+          {
+            "value": 0,
+            "name": "Off"
+          },
+          {
+            "value": 1,
+            "name": "Auto"
+          },
+          {
+            "value": 2,
+            "name": "On"
+          }
+        ]
+      },
+      {
+        "name": "Super Game Boy",
+        "id": 16,
+        "type": "list",
+        "enabled": true,
+        "writeonly": true,
+        "address": "0x214",
+        "defaultval": 0,
+        "options": [
+          {
+            "value": 0,
+            "name": "Off"
+          },
+          {
+            "value": 1,
+            "name": "Palette"
+          },
+          {
+            "value": 2,
+            "name": "On"
+          }
+        ]
+      },
+      {
+        "name": "Super Game Boy + GBC",
+        "id": 17,
+        "type": "check",
+        "enabled": true,
+        "address": "0x218",
+        "persist": false,
+        "writeonly": true,
+        "defaultval": 0,
+        "value": 1
+      },
+      {
+        "name": "Enable Rewind",
+        "id": 19,
+        "type": "check",
+        "enabled": false,
+        "address": "0x21C",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 0,
+        "value": 1
       }
     ],
     "messages": []
