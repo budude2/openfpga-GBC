@@ -900,7 +900,7 @@ gb gb
     .SAVE_out_done          ( 0                 ),            // should be one cycle high when write is done or read value is valid
     
     .rewind_on              ( rw_en             ),
-    .rewind_active          ( rw_en & cont1_key[10] )
+    .rewind_active          ( rw_en & cont1_key[8] )
 );
 
 // Sound
@@ -1006,9 +1006,9 @@ sgb sgb (
     .ce_pix             ( ce_pix      ),
 
     .joystick_0         ( {cont1_key[15], cont1_key[14], cont1_key[5], cont1_key[4], cont1_key[0], cont1_key[1], cont1_key[2], cont1_key[3]} ),
-    .joystick_1         ( cont2_key  ),
-    .joystick_2         ( cont3_key  ),
-    .joystick_3         ( cont4_key  ),
+    .joystick_1         ( {cont2_key[15], cont2_key[14], cont2_key[5], cont2_key[4], cont2_key[0], cont2_key[1], cont2_key[2], cont2_key[3]}  ),
+    .joystick_2         ( {cont3_key[15], cont3_key[14], cont3_key[5], cont3_key[4], cont3_key[0], cont3_key[1], cont3_key[2], cont3_key[3]}  ),
+    .joystick_3         ( {cont4_key[15], cont4_key[14], cont4_key[5], cont4_key[4], cont4_key[0], cont4_key[1], cont4_key[2], cont4_key[3]}  ),
     .joy_p54            ( joy_p54    ),
     .joy_do             ( joy_do_sgb ),
 
@@ -1106,7 +1106,7 @@ sgb sgb (
 wire ce_cpu, ce_cpu2x;
 wire cart_act = cart_wr | cart_rd;
 
-wire fastforward = cont1_key[8] && !ioctl_download;
+wire fastforward = cont1_key[9] && !ioctl_download;
 wire ff_on;
 
 wire sleep_savestate;
