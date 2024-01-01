@@ -30,7 +30,6 @@ module lcd
 
 	input        tint,
 	input        inv,
-	input        frame_blend,
 	input        originalcolors,
 	input        analog_wide,
 
@@ -256,13 +255,9 @@ reg [7:0] shptr = 0;
 //always @(posedge clk_vid) pixel_reg <= vbuffer[{vbuffer_out_bank, vbuffer_outptr}];
 always @(posedge clk_vid) pixel_reg <= vbuffer[vbuffer_outptr];
 
-// Previous frame data for frame blend
-//reg [14:0] prev_vbuffer[160*144];
-//reg [14:0] prev_pixel_reg;
 always @(posedge clk_vid) begin
 	if(ce_pix) begin
 		if (~gb_hb & ~gb_vb) begin
-			//prev_vbuffer[vbuffer_outptr] <= pixel_reg;
 			shadow_buf[shptr] <= pixel;
 		end
 		shptr <= (shptr == 159) ? 8'd0 : shptr + 1'd1;
@@ -271,15 +266,12 @@ always @(posedge clk_vid) begin
 		shptr <= 0;
 	if (gb_vb)
 		shadow_buf[shptr] <= 2'd0;
-		
-	//prev_pixel_reg <= prev_vbuffer[vbuffer_outptr];
 end
 
 // Current pixel_reg latched at ce_pix_n so it is ready at ce_pix
 reg [14:0] pixel_out;
 always@(posedge clk_vid) begin
 	if (ce_pix_n) pixel_out <= pixel_reg;
-	//else if (ce_pix) pixel_out <= prev_pixel_reg;
 end
 
 wire [1:0] pixel = (pixel_out[1:0] ^ {inv,inv}); //invert gb only
@@ -346,9 +338,6 @@ always@(posedge clk_vid) begin
 		shadow_end2 <= (shadow_end1 && ~border_en);
 	end
 
-	// if (ce_pix_n)
-	// 	{r_prev, g_prev, b_prev} <= {r_tmp, g_tmp, b_tmp};
-
 	if (ce_pix) begin
 		// visible area?
 		hbl_l <= sgb_en ? hb : gb_hb;
@@ -364,10 +353,6 @@ always@(posedge clk_vid) begin
 			rt <= {sgb_border_d[4:0],sgb_border_d[4:2]};
 			gt <= {sgb_border_d[9:5],sgb_border_d[9:7]};
 			bt <= {sgb_border_d[14:10],sgb_border_d[14:12]};
-		// end else if (frame_blend) begin
-		// 	rt <= blend(r_cur, r_prev);
-		// 	gt <= blend(g_cur, g_prev);
-		// 	bt <= blend(b_cur, b_prev);
 		end else begin
 			{rt,gt,bt} <= {r_cur, g_cur, b_cur};
 		end
