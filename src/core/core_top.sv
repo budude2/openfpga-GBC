@@ -597,17 +597,17 @@ wire [31:0] sd_read_data;
 
 wire sd_buff_wr;
 
-wire [16:0] sd_buff_addr_in;
-wire [16:0] sd_buff_addr_out;
+wire [17:0] sd_buff_addr_in;
+wire [17:0] sd_buff_addr_out;
 
-wire [16:0] sd_buff_addr = sd_buff_wr ? sd_buff_addr_in : sd_buff_addr_out;
+wire [17:0] sd_buff_addr = sd_buff_wr ? sd_buff_addr_in : sd_buff_addr_out;
 
 wire [15:0] sd_buff_din;
 wire [15:0] sd_buff_dout;
 
 data_unloader #(
       .ADDRESS_MASK_UPPER_4(4'h2),
-      .ADDRESS_SIZE(17),
+      .ADDRESS_SIZE(18),
       .READ_MEM_CLOCK_DELAY(15),
       .INPUT_WORD_SIZE(2)
   ) save_data_unloader (
@@ -626,7 +626,7 @@ data_unloader #(
 
 data_loader #(
   .ADDRESS_MASK_UPPER_4(4'h2),
-  .ADDRESS_SIZE(17),
+  .ADDRESS_SIZE(18),
   .WRITE_MEM_CLOCK_DELAY(15),
   .WRITE_MEM_EN_CYCLE_LENGTH(3),
   .OUTPUT_WORD_SIZE(2)
@@ -785,7 +785,7 @@ cart_top cart
 
     .bk_wr                      ( sd_buff_wr        ),
     .bk_rtc_wr                  ( 0                 ),
-    .bk_addr                    ( sd_buff_addr      ),
+    .bk_addr                    ( sd_buff_addr[17:1] ),
     .bk_data                    ( sd_buff_dout      ),
     .bk_q                       ( sd_buff_din       ),
     .img_size                   ( 0                 ),
