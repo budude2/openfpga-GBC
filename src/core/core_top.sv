@@ -728,7 +728,7 @@ cart_top cart
     .joystick_analog_0          ( 0                 ),
 
     .ce_32k                     ( ce_32k            ),
-    .RTC_time                   ( rtc_epoch_seconds ),
+    .RTC_time                   ( {rtc_valid, rtc_epoch_seconds} ),
     .RTC_timestampOut           ( RTC_timestampOut  ),
     .RTC_savedtimeOut           ( RTC_savedtimeOut  ),
     .RTC_inuse                  ( RTC_inuse         ),

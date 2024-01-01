@@ -15,7 +15,6 @@ module lcd
 
 	input  [1:0] mode,
 	input        isGBC,
-	input        double_buffer,
 
 	//palette
 	input [23:0] pal1,

@@ -544,7 +544,7 @@
     <single attribute="jtag widget visible" value="1"/>
     <single attribute="lock mode" value="0"/>
     <multi attribute="column width" size="23" value="34,34,301,74,68,78,95,96,98,98,88,88,110,101,101,101,101,101,101,101,101,107,114"/>
-    <multi attribute="frame size" size="2" value="2560,1369"/>
+    <multi attribute="frame size" size="2" value="1169,1166"/>
     <multi attribute="jtag widget size" size="2" value="348,137"/>
   </global_info>
 </session>

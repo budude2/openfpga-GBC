@@ -70,33 +70,7 @@ module cart_top (
 	input         Savestate_CRAMRWrEn,
 	input   [7:0] Savestate_CRAMWriteData,
 	output  [7:0] Savestate_CRAMReadData,
-	output        rumbling,
-
-    output  [21:16] cram0_a,
-    inout   [15:0]  cram0_dq,
-    input           cram0_wait,
-    output          cram0_clk,
-    output          cram0_adv_n,
-    output          cram0_cre,
-    output          cram0_ce0_n,
-    output          cram0_ce1_n,
-    output          cram0_oe_n,
-    output          cram0_we_n,
-    output          cram0_ub_n,
-    output          cram0_lb_n,
-
-    output  [21:16] cram1_a,
-    inout   [15:0]  cram1_dq,
-    input           cram1_wait,
-    output          cram1_clk,
-    output          cram1_adv_n,
-    output          cram1_cre,
-    output          cram1_ce0_n,
-    output          cram1_ce1_n,
-    output          cram1_oe_n,
-    output          cram1_we_n,
-    output          cram1_ub_n,
-    output          cram1_lb_n
+	output        rumbling
     );
 ///////////////////////////////////////////////////
 
