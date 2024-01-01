@@ -52,7 +52,7 @@ module lcd
 );
 
 reg [14:0] vbuffer_inptr;
-reg vbuffer_in_bank;
+//reg vbuffer_in_bank;
 reg lcd_off, lcd_freeze;
 reg blank_de, blank_output;
 reg [14:0] blank_data;
@@ -74,7 +74,8 @@ always @(posedge clk_sys) begin
 	if(old_lcd_off ^ lcd_off) begin
 		vbuffer_inptr <= 0;
 		if (lcd_off) begin //LCD disabled or VBlank
-			if(~lcd_freeze & ~sgb_freeze) vbuffer_in_bank <= ~vbuffer_in_bank;
+			//if(~lcd_freeze & ~sgb_freeze) 
+                //vbuffer_in_bank <= ~vbuffer_in_bank;
 		end
 	end
 
@@ -100,7 +101,7 @@ always @(posedge clk_sys) begin
 			if (blank_vcnt == 9'd153) begin
 				blank_vcnt <= 0;
 				vbuffer_inptr <= 0;
-				vbuffer_in_bank <= ~vbuffer_in_bank;
+				//vbuffer_in_bank <= ~vbuffer_in_bank;
 			end
 		end
 	end
@@ -115,9 +116,9 @@ always @(posedge clk_sys) begin
 	end
 end
 
-reg [14:0] vbuffer[65536];
-always @(posedge clk_sys) if(pix_wr) vbuffer[{vbuffer_in_bank, vbuffer_inptr}] <= (on & blank_output) ? blank_data : data;
-
+reg [14:0] vbuffer[32768];
+//always @(posedge clk_sys) if(pix_wr) vbuffer[{vbuffer_in_bank, vbuffer_inptr}] <= (on & blank_output) ? blank_data : data;
+always @(posedge clk_sys) if(pix_wr) vbuffer[vbuffer_inptr] <= (on & blank_output) ? blank_data : data;
 
 // Mode 00:  h-blank
 // Mode 01:  v-blank
@@ -170,7 +171,7 @@ always @(posedge clk_vid) begin
 end
 
 reg [14:0] vbuffer_outptr;
-reg vbuffer_out_bank;
+//reg vbuffer_out_bank;
 reg [1:0] shadow_buf[160];
 
 reg hb, vb, gb_hb, gb_vb, wait_vbl;
@@ -221,7 +222,7 @@ always @(posedge clk_vid) begin
 			if(v_cnt == VSTART-1) begin
 				vbuffer_outptr 	<= 0;
 				// Read from write buffer if it is far enough ahead
-				vbuffer_out_bank <= (inptr >= (160*60) || ~double_buffer) ? vbuffer_in_bank : ~vbuffer_in_bank;
+				//vbuffer_out_bank <= (inptr >= (160*60) || ~double_buffer) ? vbuffer_in_bank : ~vbuffer_in_bank;
 			end
 		end
 
@@ -252,15 +253,16 @@ end
 // -------------------------------------------------------------------------------
 reg [14:0] pixel_reg;
 reg [7:0] shptr = 0;
-always @(posedge clk_vid) pixel_reg <= vbuffer[{vbuffer_out_bank, vbuffer_outptr}];
+//always @(posedge clk_vid) pixel_reg <= vbuffer[{vbuffer_out_bank, vbuffer_outptr}];
+always @(posedge clk_vid) pixel_reg <= vbuffer[vbuffer_outptr];
 
 // Previous frame data for frame blend
-reg [14:0] prev_vbuffer[160*144];
-reg [14:0] prev_pixel_reg;
+//reg [14:0] prev_vbuffer[160*144];
+//reg [14:0] prev_pixel_reg;
 always @(posedge clk_vid) begin
 	if(ce_pix) begin
 		if (~gb_hb & ~gb_vb) begin
-			prev_vbuffer[vbuffer_outptr] <= pixel_reg;
+			//prev_vbuffer[vbuffer_outptr] <= pixel_reg;
 			shadow_buf[shptr] <= pixel;
 		end
 		shptr <= (shptr == 159) ? 8'd0 : shptr + 1'd1;
@@ -270,14 +272,14 @@ always @(posedge clk_vid) begin
 	if (gb_vb)
 		shadow_buf[shptr] <= 2'd0;
 		
-	prev_pixel_reg <= prev_vbuffer[vbuffer_outptr];
+	//prev_pixel_reg <= prev_vbuffer[vbuffer_outptr];
 end
 
 // Current pixel_reg latched at ce_pix_n so it is ready at ce_pix
 reg [14:0] pixel_out;
 always@(posedge clk_vid) begin
 	if (ce_pix_n) pixel_out <= pixel_reg;
-	else if (ce_pix) pixel_out <= prev_pixel_reg;
+	//else if (ce_pix) pixel_out <= prev_pixel_reg;
 end
 
 wire [1:0] pixel = (pixel_out[1:0] ^ {inv,inv}); //invert gb only
@@ -344,8 +346,8 @@ always@(posedge clk_vid) begin
 		shadow_end2 <= (shadow_end1 && ~border_en);
 	end
 
-	if (ce_pix_n)
-		{r_prev, g_prev, b_prev} <= {r_tmp, g_tmp, b_tmp};
+	// if (ce_pix_n)
+	// 	{r_prev, g_prev, b_prev} <= {r_tmp, g_tmp, b_tmp};
 
 	if (ce_pix) begin
 		// visible area?
@@ -362,10 +364,10 @@ always@(posedge clk_vid) begin
 			rt <= {sgb_border_d[4:0],sgb_border_d[4:2]};
 			gt <= {sgb_border_d[9:5],sgb_border_d[9:7]};
 			bt <= {sgb_border_d[14:10],sgb_border_d[14:12]};
-		end else if (frame_blend) begin
-			rt <= blend(r_cur, r_prev);
-			gt <= blend(g_cur, g_prev);
-			bt <= blend(b_cur, b_prev);
+		// end else if (frame_blend) begin
+		// 	rt <= blend(r_cur, r_prev);
+		// 	gt <= blend(g_cur, g_prev);
+		// 	bt <= blend(b_cur, b_prev);
 		end else begin
 			{rt,gt,bt} <= {r_cur, g_cur, b_cur};
 		end
