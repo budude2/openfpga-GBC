@@ -949,7 +949,6 @@ lcd lcd
 
     .tint           ( |tint       ),
     .inv            ( 0  ),
-    .double_buffer  ( 0 ),
     .originalcolors ( 0 ),
     .analog_wide    ( 0 ),
 

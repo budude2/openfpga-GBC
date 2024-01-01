@@ -215,7 +215,7 @@ always @(posedge clk_vid) begin
 		h_cnt <= h_cnt + 1'd1;
 		if(h_end) begin
 			h_cnt <= 0;
-			if(~(vb & wait_vbl) | double_buffer) v_cnt <= v_cnt + 1'd1;
+			if(~(vb & wait_vbl)) v_cnt <= v_cnt + 1'd1;
 			if(v_cnt >= VTOTAL-1) v_cnt <= 0;
 
 			if(v_cnt == VSTART-1) begin
@@ -233,17 +233,16 @@ always @(posedge clk_vid) begin
 
 	old_lcd_off <= lcd_off;
 	old_on <= on;
-	if (~double_buffer) begin
-		// Lcd turned on. Wait in vblank for output reset.
-		if (~old_on & on & ~vb) wait_vbl <= 1'b1; // lcd enabled
+	
+	// Lcd turned on. Wait in vblank for output reset.
+	if (~old_on & on & ~vb) wait_vbl <= 1'b1; // lcd enabled
 
-		if (old_lcd_off & ~lcd_off & vb) begin // lcd enabled or out of vblank
-			wait_vbl <= 0;
-			h_cnt <= 0;
-			v_cnt <= 0;
-			hs    <= 0;
-			vs    <= 0;
-		end
+	if (old_lcd_off & ~lcd_off & vb) begin // lcd enabled or out of vblank
+		wait_vbl <= 0;
+		h_cnt <= 0;
+		v_cnt <= 0;
+		hs    <= 0;
+		vs    <= 0;
 	end
 end
 
