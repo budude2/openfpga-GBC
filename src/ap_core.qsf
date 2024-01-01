@@ -741,6 +741,62 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_1wire
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spiclk
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimiso
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimosi
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334530" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=1024" -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=1024" -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "core_top:ic|gb:gb|clk_sys" -section_id auto_signaltap_2
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
+set_global_assignment -name SYSTEMVERILOG_FILE gb/data_unloader.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/psram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/data_loader.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/sound_i2s.sv
@@ -808,5 +864,249 @@ set_global_assignment -name SDC_FILE core/core_constraints.sdc
 set_global_assignment -name SIGNALTAP_FILE core/stp1.stp
 set_global_assignment -name QIP_FILE core/mf_pllbase.qip
 set_global_assignment -name SIP_FILE core/mf_pllbase.sip
+set_global_assignment -name SOURCE_FILE db/ap_core.cmp.rdb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "core_top:ic|cart_top:cart|bk_addr[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "core_top:ic|cart_top:cart|bk_addr[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "core_top:ic|cart_top:cart|bk_addr[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "core_top:ic|cart_top:cart|bk_addr[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "core_top:ic|cart_top:cart|bk_addr[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "core_top:ic|cart_top:cart|bk_addr[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "core_top:ic|cart_top:cart|bk_addr[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "core_top:ic|cart_top:cart|bk_addr[16]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "core_top:ic|cart_top:cart|bk_addr[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "core_top:ic|cart_top:cart|bk_addr[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "core_top:ic|cart_top:cart|bk_addr[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "core_top:ic|cart_top:cart|bk_addr[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "core_top:ic|cart_top:cart|bk_addr[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "core_top:ic|cart_top:cart|bk_addr[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "core_top:ic|cart_top:cart|bk_addr[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "core_top:ic|cart_top:cart|bk_addr[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "core_top:ic|cart_top:cart|bk_addr[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "core_top:ic|cart_top:cart|bk_data[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "core_top:ic|cart_top:cart|bk_data[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "core_top:ic|cart_top:cart|bk_data[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "core_top:ic|cart_top:cart|bk_data[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "core_top:ic|cart_top:cart|bk_data[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "core_top:ic|cart_top:cart|bk_data[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "core_top:ic|cart_top:cart|bk_data[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "core_top:ic|cart_top:cart|bk_data[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "core_top:ic|cart_top:cart|bk_data[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "core_top:ic|cart_top:cart|bk_data[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "core_top:ic|cart_top:cart|bk_data[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "core_top:ic|cart_top:cart|bk_data[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "core_top:ic|cart_top:cart|bk_data[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "core_top:ic|cart_top:cart|bk_data[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "core_top:ic|cart_top:cart|bk_data[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "core_top:ic|cart_top:cart|bk_data[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "core_top:ic|cart_top:cart|bk_q[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "core_top:ic|cart_top:cart|bk_q[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "core_top:ic|cart_top:cart|bk_q[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "core_top:ic|cart_top:cart|bk_q[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "core_top:ic|cart_top:cart|bk_q[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "core_top:ic|cart_top:cart|bk_q[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "core_top:ic|cart_top:cart|bk_q[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "core_top:ic|cart_top:cart|bk_q[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "core_top:ic|cart_top:cart|bk_q[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "core_top:ic|cart_top:cart|bk_q[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "core_top:ic|cart_top:cart|bk_q[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "core_top:ic|cart_top:cart|bk_q[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "core_top:ic|cart_top:cart|bk_q[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "core_top:ic|cart_top:cart|bk_q[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "core_top:ic|cart_top:cart|bk_q[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "core_top:ic|cart_top:cart|bk_q[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "core_top:ic|cart_top:cart|bk_wr" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "core_top:ic|cart_top:cart|has_save" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "core_top:ic|data_loader:save_data_loader|write_addr[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "core_top:ic|data_loader:save_data_loader|write_addr[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "core_top:ic|data_loader:save_data_loader|write_addr[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "core_top:ic|data_loader:save_data_loader|write_addr[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "core_top:ic|data_loader:save_data_loader|write_addr[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "core_top:ic|data_loader:save_data_loader|write_addr[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "core_top:ic|data_loader:save_data_loader|write_addr[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "core_top:ic|data_loader:save_data_loader|write_addr[16]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "core_top:ic|data_loader:save_data_loader|write_addr[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "core_top:ic|data_loader:save_data_loader|write_addr[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to "core_top:ic|data_loader:save_data_loader|write_addr[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to "core_top:ic|data_loader:save_data_loader|write_addr[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to "core_top:ic|data_loader:save_data_loader|write_addr[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to "core_top:ic|data_loader:save_data_loader|write_addr[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to "core_top:ic|data_loader:save_data_loader|write_addr[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to "core_top:ic|data_loader:save_data_loader|write_addr[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to "core_top:ic|data_loader:save_data_loader|write_addr[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to "core_top:ic|data_loader:save_data_loader|write_data[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to "core_top:ic|data_loader:save_data_loader|write_data[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to "core_top:ic|data_loader:save_data_loader|write_data[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to "core_top:ic|data_loader:save_data_loader|write_data[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to "core_top:ic|data_loader:save_data_loader|write_data[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to "core_top:ic|data_loader:save_data_loader|write_data[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to "core_top:ic|data_loader:save_data_loader|write_data[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to "core_top:ic|data_loader:save_data_loader|write_data[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to "core_top:ic|data_loader:save_data_loader|write_data[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to "core_top:ic|data_loader:save_data_loader|write_data[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to "core_top:ic|data_loader:save_data_loader|write_data[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to "core_top:ic|data_loader:save_data_loader|write_data[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to "core_top:ic|data_loader:save_data_loader|write_data[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to "core_top:ic|data_loader:save_data_loader|write_data[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to "core_top:ic|data_loader:save_data_loader|write_data[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to "core_top:ic|data_loader:save_data_loader|write_data[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to "core_top:ic|data_loader:save_data_loader|write_en" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[16]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to "core_top:ic|data_unloader:save_data_unloader|read_data[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to "core_top:ic|data_unloader:save_data_unloader|read_data[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to "core_top:ic|data_unloader:save_data_unloader|read_data[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to "core_top:ic|data_unloader:save_data_unloader|read_data[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to "core_top:ic|data_unloader:save_data_unloader|read_data[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to "core_top:ic|data_unloader:save_data_unloader|read_data[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to "core_top:ic|data_unloader:save_data_unloader|read_data[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to "core_top:ic|data_unloader:save_data_unloader|read_data[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to "core_top:ic|data_unloader:save_data_unloader|read_data[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to "core_top:ic|data_unloader:save_data_unloader|read_data[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to "core_top:ic|data_unloader:save_data_unloader|read_data[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to "core_top:ic|data_unloader:save_data_unloader|read_data[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to "core_top:ic|data_unloader:save_data_unloader|read_data[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to "core_top:ic|data_unloader:save_data_unloader|read_data[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to "core_top:ic|data_unloader:save_data_unloader|read_data[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to "core_top:ic|data_unloader:save_data_unloader|read_data[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to "core_top:ic|data_unloader:save_data_unloader|read_en" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "core_top:ic|cart_top:cart|bk_addr[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "core_top:ic|cart_top:cart|bk_addr[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "core_top:ic|cart_top:cart|bk_addr[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "core_top:ic|cart_top:cart|bk_addr[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "core_top:ic|cart_top:cart|bk_addr[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "core_top:ic|cart_top:cart|bk_addr[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "core_top:ic|cart_top:cart|bk_addr[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "core_top:ic|cart_top:cart|bk_addr[16]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "core_top:ic|cart_top:cart|bk_addr[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "core_top:ic|cart_top:cart|bk_addr[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "core_top:ic|cart_top:cart|bk_addr[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "core_top:ic|cart_top:cart|bk_addr[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "core_top:ic|cart_top:cart|bk_addr[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "core_top:ic|cart_top:cart|bk_addr[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "core_top:ic|cart_top:cart|bk_addr[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "core_top:ic|cart_top:cart|bk_addr[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "core_top:ic|cart_top:cart|bk_addr[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "core_top:ic|cart_top:cart|bk_data[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "core_top:ic|cart_top:cart|bk_data[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "core_top:ic|cart_top:cart|bk_data[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "core_top:ic|cart_top:cart|bk_data[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "core_top:ic|cart_top:cart|bk_data[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "core_top:ic|cart_top:cart|bk_data[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "core_top:ic|cart_top:cart|bk_data[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "core_top:ic|cart_top:cart|bk_data[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "core_top:ic|cart_top:cart|bk_data[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "core_top:ic|cart_top:cart|bk_data[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "core_top:ic|cart_top:cart|bk_data[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "core_top:ic|cart_top:cart|bk_data[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "core_top:ic|cart_top:cart|bk_data[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "core_top:ic|cart_top:cart|bk_data[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "core_top:ic|cart_top:cart|bk_data[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "core_top:ic|cart_top:cart|bk_data[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "core_top:ic|cart_top:cart|bk_q[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "core_top:ic|cart_top:cart|bk_q[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "core_top:ic|cart_top:cart|bk_q[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "core_top:ic|cart_top:cart|bk_q[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "core_top:ic|cart_top:cart|bk_q[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "core_top:ic|cart_top:cart|bk_q[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "core_top:ic|cart_top:cart|bk_q[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "core_top:ic|cart_top:cart|bk_q[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "core_top:ic|cart_top:cart|bk_q[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "core_top:ic|cart_top:cart|bk_q[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "core_top:ic|cart_top:cart|bk_q[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "core_top:ic|cart_top:cart|bk_q[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "core_top:ic|cart_top:cart|bk_q[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "core_top:ic|cart_top:cart|bk_q[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "core_top:ic|cart_top:cart|bk_q[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "core_top:ic|cart_top:cart|bk_q[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "core_top:ic|cart_top:cart|bk_wr" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "core_top:ic|cart_top:cart|has_save" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "core_top:ic|data_loader:save_data_loader|write_addr[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "core_top:ic|data_loader:save_data_loader|write_addr[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "core_top:ic|data_loader:save_data_loader|write_addr[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "core_top:ic|data_loader:save_data_loader|write_addr[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "core_top:ic|data_loader:save_data_loader|write_addr[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "core_top:ic|data_loader:save_data_loader|write_addr[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "core_top:ic|data_loader:save_data_loader|write_addr[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "core_top:ic|data_loader:save_data_loader|write_addr[16]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "core_top:ic|data_loader:save_data_loader|write_addr[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "core_top:ic|data_loader:save_data_loader|write_addr[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to "core_top:ic|data_loader:save_data_loader|write_addr[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to "core_top:ic|data_loader:save_data_loader|write_addr[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to "core_top:ic|data_loader:save_data_loader|write_addr[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to "core_top:ic|data_loader:save_data_loader|write_addr[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to "core_top:ic|data_loader:save_data_loader|write_addr[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to "core_top:ic|data_loader:save_data_loader|write_addr[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to "core_top:ic|data_loader:save_data_loader|write_addr[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to "core_top:ic|data_loader:save_data_loader|write_data[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to "core_top:ic|data_loader:save_data_loader|write_data[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to "core_top:ic|data_loader:save_data_loader|write_data[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to "core_top:ic|data_loader:save_data_loader|write_data[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to "core_top:ic|data_loader:save_data_loader|write_data[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to "core_top:ic|data_loader:save_data_loader|write_data[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to "core_top:ic|data_loader:save_data_loader|write_data[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to "core_top:ic|data_loader:save_data_loader|write_data[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to "core_top:ic|data_loader:save_data_loader|write_data[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to "core_top:ic|data_loader:save_data_loader|write_data[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to "core_top:ic|data_loader:save_data_loader|write_data[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to "core_top:ic|data_loader:save_data_loader|write_data[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to "core_top:ic|data_loader:save_data_loader|write_data[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to "core_top:ic|data_loader:save_data_loader|write_data[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to "core_top:ic|data_loader:save_data_loader|write_data[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to "core_top:ic|data_loader:save_data_loader|write_data[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to "core_top:ic|data_loader:save_data_loader|write_en" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[16]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to "core_top:ic|data_unloader:save_data_unloader|read_addr[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to "core_top:ic|data_unloader:save_data_unloader|read_data[0]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to "core_top:ic|data_unloader:save_data_unloader|read_data[10]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to "core_top:ic|data_unloader:save_data_unloader|read_data[11]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to "core_top:ic|data_unloader:save_data_unloader|read_data[12]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to "core_top:ic|data_unloader:save_data_unloader|read_data[13]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to "core_top:ic|data_unloader:save_data_unloader|read_data[14]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to "core_top:ic|data_unloader:save_data_unloader|read_data[15]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to "core_top:ic|data_unloader:save_data_unloader|read_data[1]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to "core_top:ic|data_unloader:save_data_unloader|read_data[2]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to "core_top:ic|data_unloader:save_data_unloader|read_data[3]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to "core_top:ic|data_unloader:save_data_unloader|read_data[4]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to "core_top:ic|data_unloader:save_data_unloader|read_data[5]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to "core_top:ic|data_unloader:save_data_unloader|read_data[6]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to "core_top:ic|data_unloader:save_data_unloader|read_data[7]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to "core_top:ic|data_unloader:save_data_unloader|read_data[8]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to "core_top:ic|data_unloader:save_data_unloader|read_data[9]" -section_id auto_signaltap_2
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to "core_top:ic|data_unloader:save_data_unloader|read_en" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=119" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=119" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=119" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id auto_signaltap_2
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=381" -section_id auto_signaltap_2
 set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -303,16 +303,18 @@ assign vpll_feed   = 1'bZ;
 // add your own devices here
 always @(*) begin
     casex(bridge_addr)
-    default: begin
-        bridge_rd_data <= 0;
-    end
-    32'hF80000B8: begin
-        bridge_rd_data <= 16'h444D;
-    end
-    32'hF8xxxxxx: begin
-        bridge_rd_data <= cmd_bridge_rd_data;
-    end
+        default: begin
+            bridge_rd_data <= 0;
+        end
+
+        32'hF8xxxxxx: begin
+            bridge_rd_data <= cmd_bridge_rd_data;
+        end
     endcase
+
+    if (bridge_addr[31:28] == 4'h2) begin
+        bridge_rd_data <= sd_read_data;
+    end
 end
 
 reg [2:0] mapper_sel;
@@ -577,6 +579,71 @@ data_loader #(
   .write_data(ioctl_dout)
 );
 
+always @(posedge clk_74a or negedge pll_core_locked) begin
+    if (~pll_core_locked) begin
+        datatable_addr <= 0;
+        datatable_data <= 0;
+        datatable_wren <= 0;
+    end else begin
+        // Write sram size
+        datatable_wren <= 1;
+        datatable_data <= cart_has_save ? 32'h0000_8000 : 32'h0;
+        // Data slot index 1, not id 1
+        datatable_addr <= 1 * 2 + 1;
+    end
+end
+
+wire [31:0] sd_read_data;
+
+wire sd_buff_wr;
+
+wire [16:0] sd_buff_addr_in;
+wire [16:0] sd_buff_addr_out;
+
+wire [16:0] sd_buff_addr = sd_buff_wr ? sd_buff_addr_in : sd_buff_addr_out;
+
+wire [15:0] sd_buff_din;
+wire [15:0] sd_buff_dout;
+
+data_unloader #(
+      .ADDRESS_MASK_UPPER_4(4'h2),
+      .ADDRESS_SIZE(17),
+      .READ_MEM_CLOCK_DELAY(15),
+      .INPUT_WORD_SIZE(2)
+  ) save_data_unloader (
+      .clk_74a(clk_74a),
+      .clk_memory(clk_sys),
+
+      .bridge_rd(bridge_rd),
+      .bridge_endian_little(bridge_endian_little),
+      .bridge_addr(bridge_addr),
+      .bridge_rd_data(sd_read_data),
+
+      .read_en  (),
+      .read_addr(sd_buff_addr_out),
+      .read_data(sd_buff_din)
+);
+
+data_loader #(
+  .ADDRESS_MASK_UPPER_4(4'h2),
+  .ADDRESS_SIZE(17),
+  .WRITE_MEM_CLOCK_DELAY(15),
+  .WRITE_MEM_EN_CYCLE_LENGTH(3),
+  .OUTPUT_WORD_SIZE(2)
+) save_data_loader (
+  .clk_74a(clk_74a),
+  .clk_memory(clk_sys),
+
+  .bridge_wr(bridge_wr),
+  .bridge_endian_little(bridge_endian_little),
+  .bridge_addr(bridge_addr),
+  .bridge_wr_data(bridge_wr_data),
+
+  .write_en  (sd_buff_wr),
+  .write_addr(sd_buff_addr_in),
+  .write_data(sd_buff_dout)
+);
+
 //////// Start GB/GBC Stuff ////////
 
 reg ioctl_download = 0;
@@ -716,11 +783,11 @@ cart_top cart
     .ioctl_dout                 ( ioctl_dout        ),
     .ioctl_wait                 ( ioctl_wait        ),
 
-    .bk_wr                      ( 0                 ),
+    .bk_wr                      ( sd_buff_wr        ),
     .bk_rtc_wr                  ( 0                 ),
-    .bk_addr                    ( 0                 ),
-    .bk_data                    ( 0                 ),
-    .bk_q                       (                   ),
+    .bk_addr                    ( sd_buff_addr      ),
+    .bk_data                    ( sd_buff_dout      ),
+    .bk_q                       ( sd_buff_din       ),
     .img_size                   ( 0                 ),
 
     .rom_di                     ( rom_do            ),
