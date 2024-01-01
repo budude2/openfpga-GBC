@@ -12,13 +12,13 @@
       },
       {
         "name": "Save",
-        "id": 10,
+        "id": 18,
         "required": false,
         "parameters": "0x84",
         "nonvolatile": true,
         "extensions": ["sav", "srm"],
         "address": "0x20000000",
-        "size_maximum": "0x40000"
+        "size_maximum": "0x8000"
       },
       {
         "name": "GBC BIOS",
