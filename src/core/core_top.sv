@@ -587,7 +587,7 @@ always @(posedge clk_74a or negedge pll_core_locked) begin
     end else begin
         // Write sram size
         datatable_wren <= 1;
-        datatable_data <= cart_has_save ? 32'h0000_8000 : 32'h0;
+        datatable_data <= cart_has_save ? 32'h0000_8009 : 32'h0;
         // Data slot index 1, not id 1
         datatable_addr <= 1 * 2 + 1;
     end
@@ -595,19 +595,42 @@ end
 
 wire [31:0] sd_read_data;
 
-wire sd_buff_wr;
+wire [16:0] sd_buff_addr_in;
+wire [16:0] sd_buff_addr_out;
 
-wire [17:0] sd_buff_addr_in;
-wire [17:0] sd_buff_addr_out;
+wire [16:0] sd_buff_addr = write_en ? sd_buff_addr_in : sd_buff_addr_out;
 
-wire [17:0] sd_buff_addr = sd_buff_wr ? sd_buff_addr_in : sd_buff_addr_out;
-
-wire [15:0] sd_buff_din;
+wire [15:0] sd_buff_din, bk_q;
 wire [15:0] sd_buff_dout;
+
+always_comb begin
+    if (sd_buff_addr_out[15:8] == 8'h80) begin
+        case(sd_buff_addr_out[8:1])
+            8'h00 : sd_buff_din = RTC_timestampOut[15:0];
+            8'h01 : sd_buff_din = RTC_timestampOut[31:16];
+            8'h02 : sd_buff_din = RTC_savedtimeOut[15:0];
+            8'h03 : sd_buff_din = RTC_savedtimeOut[31:16];
+            8'h04 : sd_buff_din = RTC_savedtimeOut[47:32];
+            default  : sd_buff_din = 16'hFFFF;
+        endcase
+    end else begin
+        sd_buff_din = bk_q;
+    end
+end
+
+always_comb begin
+    if (sd_buff_addr_in[15:8] == 8'h80) begin
+        bk_wr = 0;
+        bk_rtc_wr = write_en;
+    end else begin
+        bk_wr     = write_en;
+        bk_rtc_wr = 0;
+    end
+end
 
 data_unloader #(
       .ADDRESS_MASK_UPPER_4(4'h2),
-      .ADDRESS_SIZE(18),
+      .ADDRESS_SIZE(17),
       .READ_MEM_CLOCK_DELAY(15),
       .INPUT_WORD_SIZE(2)
   ) save_data_unloader (
@@ -624,9 +647,11 @@ data_unloader #(
       .read_data(sd_buff_din)
 );
 
+wire bk_wr, bk_rtc_wr, write_en;
+
 data_loader #(
   .ADDRESS_MASK_UPPER_4(4'h2),
-  .ADDRESS_SIZE(18),
+  .ADDRESS_SIZE(17),
   .WRITE_MEM_CLOCK_DELAY(15),
   .WRITE_MEM_EN_CYCLE_LENGTH(3),
   .OUTPUT_WORD_SIZE(2)
@@ -639,7 +664,7 @@ data_loader #(
   .bridge_addr(bridge_addr),
   .bridge_wr_data(bridge_wr_data),
 
-  .write_en  (sd_buff_wr),
+  .write_en  (write_en),
   .write_addr(sd_buff_addr_in),
   .write_data(sd_buff_dout)
 );
@@ -727,7 +752,6 @@ wire isGBC_game, isSGB_game;
 wire cart_has_save;
 wire [31:0] RTC_timestampOut;
 wire [47:0] RTC_savedtimeOut;
-wire RTC_inuse;
 wire rumbling;
 
 assign joy0_rumble = {8'd0, ((rumbling & rumble_en) ? 8'd128 : 8'd0)};
@@ -783,11 +807,11 @@ cart_top cart
     .ioctl_dout                 ( ioctl_dout        ),
     .ioctl_wait                 ( ioctl_wait        ),
 
-    .bk_wr                      ( sd_buff_wr        ),
-    .bk_rtc_wr                  ( 0                 ),
-    .bk_addr                    ( sd_buff_addr[17:1] ),
+    .bk_wr                      ( bk_wr        ),
+    .bk_rtc_wr                  ( bk_rtc_wr         ),
+    .bk_addr                    ( sd_buff_addr[16:1] ),
     .bk_data                    ( sd_buff_dout      ),
-    .bk_q                       ( sd_buff_din       ),
+    .bk_q                       ( bk_q       ),
     .img_size                   ( 0                 ),
 
     .rom_di                     ( rom_do            ),
@@ -798,7 +822,7 @@ cart_top cart
     .RTC_time                   ( {rtc_valid, rtc_epoch_seconds} ),
     .RTC_timestampOut           ( RTC_timestampOut  ),
     .RTC_savedtimeOut           ( RTC_savedtimeOut  ),
-    .RTC_inuse                  ( RTC_inuse         ),
+    .RTC_inuse                  ( ),
 
     .SaveStateExt_Din           ( 0                 ),
     .SaveStateExt_Adr           ( 0                 ),
