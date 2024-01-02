@@ -5,20 +5,21 @@ Please report any issues encountered to this repo. Issues will be upstreamed as 
 
 ## Installation
 To install the core, copy the `Assets`, `Cores`, and `Platform` folders over to the root of your SD card. Please note that Finder on macOS automatically _replaces_ folders, rather than merging them like Windows does, so you have to manually merge the folders.
+
 Place GBC and GB bios in `/Assets/gbc/common` named "gbc_bios.bin" and "gb_bios.bin" respectively.
 
 ## Usage
-ROMs should be placed in `/Assets/gbc/common`. Both headered and unheadered ROMs are now supported.
+ROMs should be placed in `/Assets/gbc/common`.
 
 ## Features
 
 ### Supported
-Real-Time Clock
-Fastforward
-Original Gameboy display modes
+* Real-Time Clock
+* Fastforward
+* Original Gameboy display modes
 
 ### In Progress
-Super Gameboy Support
-Custom Borders
-SaveStates
-Custom Palette Loading
+* Super Gameboy Support
+* Custom Borders
+* SaveStates
+* Custom Palette Loading
