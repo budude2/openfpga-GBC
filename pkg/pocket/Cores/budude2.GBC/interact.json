@@ -16,7 +16,6 @@
         "type": "list",
         "enabled": true,
         "writeonly": true,
-        "persist": true,
         "address": "0x208",
         "defaultval": 0,
         "options": [
