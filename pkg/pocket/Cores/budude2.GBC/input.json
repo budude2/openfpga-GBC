@@ -24,7 +24,13 @@
             "id": 3,
             "name": "Select",
             "key": "pad_btn_select"
+          },
+          {
+            "id": 4,
+            "name": "Fastforward",
+            "key": "pad_trig_r"
           }
+
         ]
       }
     ]
