@@ -4,11 +4,11 @@
     "metadata": {
       "platform_ids": ["gbc"],
       "shortname": "GBC",
-      "description": "Nintendo Entertainment System and Famicom. Nintendo's first home console",
+      "description": "Game Boy and Game Boy Color",
       "author": "budude2",
-      "url": "https://github.com/agg23/openFPGA-NES",
+      "url": "https://github.com/budude2/openfgpa-GB",
       "version": "1.0.0",
-      "date_release": "2023-09-26"
+      "date_release": "2024-01-02"
     },
     "framework": {
       "target_product": "Analogue Pocket",

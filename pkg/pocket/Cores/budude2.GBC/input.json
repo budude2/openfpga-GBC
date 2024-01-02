@@ -16,16 +16,6 @@
             "key": "pad_btn_b"
           },
           {
-            "id": 4,
-            "name": "A Turbo",
-            "key": "pad_btn_x"
-          },
-          {
-            "id": 5,
-            "name": "B Turbo",
-            "key": "pad_btn_y"
-          },
-          {
             "id": 2,
             "name": "Start",
             "key": "pad_btn_start"

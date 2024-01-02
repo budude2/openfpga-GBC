@@ -598,10 +598,16 @@ wire [31:0] sd_read_data;
 wire [16:0] sd_buff_addr_in;
 wire [16:0] sd_buff_addr_out;
 
-wire [16:0] sd_buff_addr = write_en ? sd_buff_addr_in : sd_buff_addr_out;
+wire [16:0] sd_buff_addr = bk_rtc_wr ? currRTCaddr : (write_en ? sd_buff_addr_in : sd_buff_addr_out);
 
 wire [15:0] sd_buff_din, bk_q;
 wire [15:0] sd_buff_dout;
+
+wire [15:0] bk_data = bk_rtc_wr ? rtc_data[currRTCaddr[16:1]] : sd_buff_dout;
+
+wire bk_wr, rtc_wr, write_en;
+
+reg bk_rtc_wr;
 
 always_comb begin
     if (sd_buff_addr_out[15:8] == 8'h80) begin
@@ -620,13 +626,90 @@ end
 
 always_comb begin
     if (sd_buff_addr_in[15:8] == 8'h80) begin
-        bk_wr = 0;
-        bk_rtc_wr = write_en;
+        bk_wr  = 0;
+        rtc_wr = write_en;
     end else begin
-        bk_wr     = write_en;
-        bk_rtc_wr = 0;
+        bk_wr  = write_en;
+        rtc_wr = 0;
     end
 end
+
+reg [15:0] rtc_data[5];
+
+always @(posedge clk_sys) begin
+    if(rtc_wr) begin
+        rtc_data[sd_buff_addr_in[8:1]] <= sd_buff_dout;
+    end
+end
+
+typedef enum {
+    READ,
+    WRITE,
+    INC,
+    STOP
+} stateType;
+
+stateType currState, nextState;
+
+wire [16:0] currRTCaddr, nextRTCaddr;
+
+always_ff @(posedge clk_sys) begin
+    if(reset) begin
+        currState <= READ;
+        currRTCaddr <= 0;
+
+    end else begin
+        currState <= nextState;
+        currRTCaddr <= nextRTCaddr;
+    end
+end
+
+always_comb begin
+    nextState = currState;
+    nextRTCaddr = currRTCaddr;
+    bk_rtc_wr = 0;
+
+    case(currState)
+
+        READ: begin
+            nextState = WRITE;
+        end
+
+        WRITE: begin
+            bk_rtc_wr = 1;
+            nextState = INC;
+        end
+
+        INC: begin
+            nextRTCaddr = currRTCaddr + 2;
+
+            if(nextRTCaddr < 10) begin
+                nextState = READ;
+            end else begin
+                nextState = STOP;
+            end
+        end
+
+        STOP: begin
+            nextState = STOP;
+        end
+    endcase
+end
+
+// always @(posedge clk_sys) begin
+//     if(reset) begin
+//         bk_rtc_wr <= 1'b0;
+//         rtc_addr  <= 0;
+//     end else begin
+//         if (rtc_addr < 5) begin
+//             bk_rtc_wr <= 1;
+//             rtc_addr  <= rtc_addr + 1;
+//         end else begin
+//             bk_rtc_wr <= 1'b0;
+//             rtc_addr  <= 0;
+//         end
+//     end
+// end
 
 data_unloader #(
       .ADDRESS_MASK_UPPER_4(4'h2),
@@ -647,7 +730,6 @@ data_unloader #(
       .read_data(sd_buff_din)
 );
 
-wire bk_wr, bk_rtc_wr, write_en;
 
 data_loader #(
   .ADDRESS_MASK_UPPER_4(4'h2),
@@ -808,9 +890,9 @@ cart_top cart
     .ioctl_wait                 ( ioctl_wait        ),
 
     .bk_wr                      ( bk_wr        ),
-    .bk_rtc_wr                  ( bk_rtc_wr         ),
+    .bk_rtc_wr                  ( bk_rtc_wr       ),
     .bk_addr                    ( sd_buff_addr[16:1] ),
-    .bk_data                    ( sd_buff_dout      ),
+    .bk_data                    ( bk_data      ),
     .bk_q                       ( bk_q       ),
     .img_size                   ( 0                 ),
 
