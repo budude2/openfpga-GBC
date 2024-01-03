@@ -2,11 +2,11 @@
   "core": {
     "magic": "APF_VER_1",
     "metadata": {
-      "platform_ids": ["gbc"],
+      "platform_ids": ["gbc", "gb"],
       "shortname": "GBC",
       "description": "Game Boy and Game Boy Color",
       "author": "budude2",
-      "url": "https://github.com/budude2/openfgpa-GB",
+      "url": "https://github.com/budude2/openfgpa-GBC",
       "version": "1.0.0",
       "date_release": "2024-01-02"
     },
