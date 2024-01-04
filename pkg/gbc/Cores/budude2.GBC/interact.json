@@ -11,6 +11,18 @@
         "value": 1
       },
       {
+        "name": "Original Colors",
+        "id": 13,
+        "type": "check",
+        "enabled": true,
+        "address": "0x208",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 1,
+        "value": 1,
+        "value_off": 0
+      },
+      {
         "name": "Enable FF Sound",
         "id": 14,
         "type": "check",

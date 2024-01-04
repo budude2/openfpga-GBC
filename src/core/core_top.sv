@@ -1,9 +1,3 @@
-//
-// User core top-level
-//
-// Instantiated by the real top-level: apf_top
-//
-
 `default_nettype none
 
 `define isgbc 1
@@ -319,15 +313,15 @@ always @(*) begin
     end
 end
 
-reg [2:0] mapper_sel;
-reg [31:0] reset_delay = 0;
-reg rumble_en;
-reg [1:0] sys_type;
-reg ff_snd_en;
-reg [1:0] tint;
-reg [1:0] sgb_en;
-reg sgc_gbc_en;
-reg rw_en;
+reg [31:0] reset_delay  = 0;
+reg rumble_en           = 0;
+reg ff_snd_en           = 0;
+reg [1:0] tint          = 0;
+reg originalcolors;
+
+reg [1:0] sgb_en        = 0;
+reg sgc_gbc_en          = 0;
+reg rw_en               = 0;
 
 always @(posedge clk_74a) begin
     if (reset_delay > 0) begin
@@ -339,27 +333,14 @@ always @(posedge clk_74a) begin
         32'h050: begin
           reset_delay <= 32'h100000;
         end
-        32'h200: begin
-          mapper_sel <= bridge_wr_data[2:0];
-          reset_delay <= 32'h100000;
-        end
         32'h204: begin
           rumble_en <= bridge_wr_data[0];
         end
+        32'h208: begin
+          originalcolors <= bridge_wr_data[0];
+        end
         32'h20C: begin
           ff_snd_en <= bridge_wr_data[0];
-        end
-        32'h210: begin
-          tint <= bridge_wr_data[1:0];
-        end
-        32'h214: begin
-          sgb_en <= bridge_wr_data[1:0];
-        end
-        32'h218: begin
-          sgc_gbc_en <= bridge_wr_data[0];
-        end
-        32'h21C: begin
-          rw_en <= bridge_wr_data[0];
         end
       endcase
     end
@@ -540,6 +521,58 @@ wire    reset_n_s;
 synch_3 s01(pll_core_locked, pll_core_locked_s, clk_ram);
 synch_3 s02(reset_n, reset_n_s, clk_sys);
 synch_3 s03(external_reset, external_reset_s, clk_sys);
+
+wire [31:0] cont1_key_s, cont2_key_s, cont3_key_s, cont4_key_s;
+
+synch_3 #(
+    .WIDTH(32)
+) s04 (
+    cont1_key,
+    cont1_key_s,
+    clk_sys
+);
+
+synch_3 #(
+    .WIDTH(32)
+) s05 (
+    cont2_key,
+    cont2_key_s,
+    clk_sys
+);
+
+synch_3 #(
+    .WIDTH(32)
+) s06 (
+    cont3_key,
+    cont3_key_s,
+    clk_sys
+);
+
+synch_3 #(
+    .WIDTH(32)
+) s07 (
+    cont4_key,
+    cont4_key_s,
+    clk_sys
+);
+
+wire rumble_en_s, originalcolors_s, ff_snd_en_s;
+
+synch_3 #(
+    .WIDTH(3)
+) settings (
+    {
+        rumble_en,
+        originalcolors,
+        ff_snd_en
+    },
+    {
+        rumble_en_s,
+        originalcolors_s,
+        ff_snd_en_s
+    },
+    clk_sys
+);
 
 mf_pllbase mp1
 (
@@ -818,7 +851,7 @@ wire [31:0] RTC_timestampOut;
 wire [47:0] RTC_savedtimeOut;
 wire rumbling;
 
-assign joy0_rumble = {8'd0, ((rumbling & rumble_en) ? 8'd128 : 8'd0)};
+assign joy0_rumble = {8'd0, ((rumbling & rumble_en_s) ? 8'd128 : 8'd0)};
 
 reg ce_32k; // 32768Hz clock for RTC
 reg [9:0] ce_32k_div;
@@ -836,7 +869,7 @@ cart_top cart
     .ce_cpu2x                   ( ce_cpu2x          ),
     .speed                      ( speed             ),
     .megaduck                   ( megaduck          ),
-    .mapper_sel                 ( mapper_sel        ),
+    .mapper_sel                 ( 0        ),
 
     .cart_addr                  ( cart_addr         ),
     .cart_a15                   ( cart_a15          ),
@@ -1027,7 +1060,7 @@ gb gb
     .SAVE_out_done          ( 0                 ),            // should be one cycle high when write is done or read value is valid
     
     .rewind_on              ( rw_en             ),
-    .rewind_active          ( rw_en & cont1_key[8] )
+    .rewind_active          ( rw_en & cont1_key_s[8] )
 );
 
 // Sound
@@ -1035,8 +1068,8 @@ gb gb
 wire [15:0] audio_l, audio_r;
 reg  [15:0] audio_buffer_l = 0, audio_buffer_r = 0;
 
-assign audio_l = (fast_forward && ~ff_snd_en) ? 16'd0 : GB_AUDIO_L;
-assign audio_r = (fast_forward && ~ff_snd_en) ? 16'd0 : GB_AUDIO_R;
+assign audio_l = (fast_forward && ~ff_snd_en_s) ? 16'd0 : GB_AUDIO_L;
+assign audio_r = (fast_forward && ~ff_snd_en_s) ? 16'd0 : GB_AUDIO_R;
 
 // Buffer audio to have better fitting on audio route
 always @(posedge clk_sys) begin
@@ -1085,7 +1118,7 @@ lcd lcd
 
     .tint           ( |tint       ),
     .inv            ( 0  ),
-    .originalcolors ( 0 ),
+    .originalcolors ( originalcolors_s ),
     .analog_wide    ( 0 ),
 
     // Palettes
@@ -1130,10 +1163,10 @@ sgb sgb (
     .clk_vid            ( CLK_VIDEO   ),
     .ce_pix             ( ce_pix      ),
 
-    .joystick_0         ( {cont1_key[15], cont1_key[14], cont1_key[5], cont1_key[4], cont1_key[0], cont1_key[1], cont1_key[2], cont1_key[3]} ),
-    .joystick_1         ( {cont2_key[15], cont2_key[14], cont2_key[5], cont2_key[4], cont2_key[0], cont2_key[1], cont2_key[2], cont2_key[3]}  ),
-    .joystick_2         ( {cont3_key[15], cont3_key[14], cont3_key[5], cont3_key[4], cont3_key[0], cont3_key[1], cont3_key[2], cont3_key[3]}  ),
-    .joystick_3         ( {cont4_key[15], cont4_key[14], cont4_key[5], cont4_key[4], cont4_key[0], cont4_key[1], cont4_key[2], cont4_key[3]}  ),
+    .joystick_0         ( {cont1_key_s[15], cont1_key_s[14], cont1_key_s[5], cont1_key_s[4], cont1_key_s[0], cont1_key_s[1], cont1_key_s[2], cont1_key_s[3]} ),
+    .joystick_1         ( {cont2_key_s[15], cont2_key_s[14], cont2_key_s[5], cont2_key_s[4], cont2_key_s[0], cont2_key_s[1], cont2_key_s[2], cont2_key_s[3]}  ),
+    .joystick_2         ( {cont3_key_s[15], cont3_key_s[14], cont3_key_s[5], cont3_key_s[4], cont3_key_s[0], cont3_key_s[1], cont3_key_s[2], cont3_key_s[3]}  ),
+    .joystick_3         ( {cont4_key_s[15], cont4_key_s[14], cont4_key_s[5], cont4_key_s[4], cont4_key_s[0], cont4_key_s[1], cont4_key_s[2], cont4_key_s[3]}  ),
     .joy_p54            ( joy_p54    ),
     .joy_do             ( joy_do_sgb ),
 
@@ -1234,7 +1267,7 @@ sgb sgb (
 wire ce_cpu, ce_cpu2x;
 wire cart_act = cart_wr | cart_rd;
 
-wire fastforward = cont1_key[9] && !ioctl_download;
+wire fastforward = cont1_key_s[9] && !ioctl_download;
 wire ff_on;
 
 wire sleep_savestate;
