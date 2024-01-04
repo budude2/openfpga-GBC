@@ -6,6 +6,8 @@
 
 `default_nettype none
 
+`define isgbc 1
+
 module core_top (
 
 //
@@ -343,10 +345,6 @@ always @(posedge clk_74a) begin
         end
         32'h204: begin
           rumble_en <= bridge_wr_data[0];
-        end
-        32'h208: begin
-          sys_type <= bridge_wr_data[1:0];
-          reset_delay <= 32'h100000;
         end
         32'h20C: begin
           ff_snd_en <= bridge_wr_data[0];
@@ -696,21 +694,6 @@ always_comb begin
     endcase
 end
 
-// always @(posedge clk_sys) begin
-//     if(reset) begin
-//         bk_rtc_wr <= 1'b0;
-//         rtc_addr  <= 0;
-//     end else begin
-//         if (rtc_addr < 5) begin
-//             bk_rtc_wr <= 1;
-//             rtc_addr  <= rtc_addr + 1;
-//         end else begin
-//             bk_rtc_wr <= 1'b0;
-//             rtc_addr  <= 0;
-//         end
-//     end
-// end
-
 data_unloader #(
       .ADDRESS_MASK_UPPER_4(4'h2),
       .ADDRESS_SIZE(17),
@@ -729,7 +712,6 @@ data_unloader #(
       .read_addr(sd_buff_addr_out),
       .read_data(sd_buff_din)
 );
-
 
 data_loader #(
   .ADDRESS_MASK_UPPER_4(4'h2),
@@ -776,7 +758,7 @@ wire [24:0] ioctl_addr;
 wire [15:0] ioctl_dout;
 wire        ioctl_wait;
 
-wire cart_download       = ioctl_download && (dataslot_requestwrite_id[5:0] == 6'h01 || dataslot_requestwrite_id[7:0] == 8'h80);
+wire cart_download       = ioctl_download && (dataslot_requestwrite_id == 1);
 wire md_download         = ioctl_download && (dataslot_requestwrite_id[7:0] == 8'h81);
 wire palette_download    = ioctl_download && (dataslot_requestwrite_id == 3 /*|| !filetype*/);
 wire sgb_border_download = ioctl_download && (dataslot_requestwrite_id == 2);
@@ -941,28 +923,9 @@ wire DMA_on;
 
 wire reset = (~reset_n_s | external_reset_s | cart_download | boot_download);
 wire speed;
+
 reg megaduck = 0;
-
-reg isGBC = 0;
-wire sys_auto     = (sys_type == 0);
-wire sys_gbc      = (sys_type == 2);
-wire sys_megaduck = (sys_type == 3);
-
-always @(posedge clk_sys) if(reset) begin
-    if (cart_download)
-        megaduck <= sys_megaduck;
-    if (md_download)
-        megaduck <= sys_auto || sys_megaduck;
-
-    if(~sys_auto)
-        isGBC <= sys_gbc;
-    else if(cart_download) begin
-        if (!dataslot_requestwrite_id[5:0])
-            isGBC <= isGBC_game;
-        else
-            isGBC <= !dataslot_requestwrite_id[7:6];
-    end
-end
+reg isGBC    = `isgbc;
 
 wire [15:0] GB_AUDIO_L;
 wire [15:0] GB_AUDIO_R;

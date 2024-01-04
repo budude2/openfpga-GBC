@@ -11,29 +11,6 @@
         "value": 1
       },
       {
-        "name": "System Select",
-        "id": 13,
-        "type": "list",
-        "enabled": true,
-        "writeonly": true,
-        "address": "0x208",
-        "defaultval": 0,
-        "options": [
-          {
-            "value": 0,
-            "name": "Auto"
-          },
-          {
-            "value": 1,
-            "name": "Gameboy"
-          },
-          {
-            "value": 2,
-            "name": "Gameboy Color"
-          }
-        ]
-      },
-      {
         "name": "Enable FF Sound",
         "id": 14,
         "type": "check",

@@ -2,9 +2,9 @@
   "core": {
     "magic": "APF_VER_1",
     "metadata": {
-      "platform_ids": ["gbc", "gb"],
-      "shortname": "GBC",
-      "description": "Game Boy and Game Boy Color",
+      "platform_ids": ["gb"],
+      "shortname": "GB",
+      "description": "Game Boy",
       "author": "budude2",
       "url": "https://github.com/budude2/openfgpa-GBC",
       "version": "1.0.0",
@@ -27,7 +27,7 @@
       {
         "name": "default",
         "id": 0,
-        "filename": "gbc.rbf_r"
+        "filename": "gb.rbf_r"
       }
     ]
   }
