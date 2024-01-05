@@ -640,9 +640,9 @@ wire [15:0] sd_buff_dout;
 
 wire [15:0] bk_data = bk_rtc_wr ? rtc_data[currRTCaddr[16:1]] : sd_buff_dout;
 
-wire bk_wr, rtc_wr, write_en;
+wire bk_wr, rtc_wr, rtc_wr_old, write_en;
 
-reg bk_rtc_wr;
+reg bk_rtc_wr, rtc_loaded;
 
 always_comb begin
     if (sd_buff_addr_out[15:8] == 8'h80) begin
@@ -670,6 +670,20 @@ always_comb begin
 end
 
 reg [15:0] rtc_data[5];
+
+always @(posedge clk_sys) begin
+    rtc_wr_old <= rtc_wr;
+
+    if(external_reset_s | cart_download) begin
+        rtc_loaded <= 0;
+    end
+    else if(~rtc_wr_old & rtc_wr) begin
+        rtc_loaded <= 1;
+    end
+    else begin
+        rtc_loaded <= rtc_loaded;
+    end
+end
 
 always @(posedge clk_sys) begin
     if(rtc_wr) begin
@@ -707,7 +721,9 @@ always_comb begin
     case(currState)
 
         READ: begin
-            nextState = WRITE;
+            if(rtc_loaded) begin
+                nextState = WRITE;
+            end
         end
 
         WRITE: begin
