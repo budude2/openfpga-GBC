@@ -7,7 +7,7 @@
         "id": 1,
         "required": true,
         "parameters": "0x109",
-        "extensions": ["gbc"],
+        "extensions": ["gbc", "gb"],
         "address": "0x10000000"
       },
       {

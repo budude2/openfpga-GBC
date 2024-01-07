@@ -231,15 +231,16 @@ assign bridge_endian_little = 0;
 
 // cart is unused, so set all level translators accordingly
 // directions are 0:IN, 1:OUT
-assign cart_tran_bank3         = 8'hzz;
-assign cart_tran_bank3_dir     = 1'b0;
+assign cart_tran_bank3[7:2]    = 6'hzz;
+assign cart_tran_bank3[0]      = 1'hz;
+assign cart_tran_bank3_dir     = 1'b1; // Set to output for rumble cart
 assign cart_tran_bank2         = 8'hzz;
 assign cart_tran_bank2_dir     = 1'b0;
 assign cart_tran_bank1         = 8'hzz;
 assign cart_tran_bank1_dir     = 1'b0;
-assign cart_tran_bank0         = 4'hf;
-assign cart_tran_bank0_dir     = 1'b1;
-assign cart_tran_pin30         = 1'b0;      // reset or cs2, we let the hw control it by itself
+assign cart_tran_bank0         = 4'h8; // Tie WR to 0 for rumble cart
+assign cart_tran_bank0_dir     = 1'b1; // Set to output for rumble cart
+assign cart_tran_pin30         = 1'b0; // reset or cs2, we let the hw control it by itself
 assign cart_tran_pin30_dir     = 1'bz;
 assign cart_pin30_pwroff_reset = 1'b0;  // hardware can control this
 assign cart_tran_pin31         = 1'bz;      // input
@@ -341,6 +342,9 @@ always @(posedge clk_74a) begin
         end
         32'h20C: begin
           ff_snd_en <= bridge_wr_data[0];
+        end
+        32'h210: begin
+          tint <= bridge_wr_data[1:0];
         end
       endcase
     end
@@ -636,9 +640,9 @@ wire [15:0] sd_buff_dout;
 
 wire [15:0] bk_data = bk_rtc_wr ? rtc_data[currRTCaddr[16:1]] : sd_buff_dout;
 
-wire bk_wr, rtc_wr, write_en;
+wire bk_wr, rtc_wr, rtc_wr_old, write_en;
 
-reg bk_rtc_wr;
+reg bk_rtc_wr, rtc_loaded;
 
 always_comb begin
     if (sd_buff_addr_out[15:8] == 8'h80) begin
@@ -666,6 +670,20 @@ always_comb begin
 end
 
 reg [15:0] rtc_data[5];
+
+always @(posedge clk_sys) begin
+    rtc_wr_old <= rtc_wr;
+
+    if(external_reset_s | cart_download) begin
+        rtc_loaded <= 0;
+    end
+    else if(~rtc_wr_old & rtc_wr) begin
+        rtc_loaded <= 1;
+    end
+    else begin
+        rtc_loaded <= rtc_loaded;
+    end
+end
 
 always @(posedge clk_sys) begin
     if(rtc_wr) begin
@@ -703,7 +721,9 @@ always_comb begin
     case(currState)
 
         READ: begin
-            nextState = WRITE;
+            if(rtc_loaded) begin
+                nextState = WRITE;
+            end
         end
 
         WRITE: begin
@@ -774,8 +794,6 @@ always @(posedge clk_74a) begin
     if (dataslot_requestwrite) ioctl_download <= 1;
     else if (dataslot_allcomplete) ioctl_download <= 0;
 end
-
-wire [15:0] joy0_rumble;
 
 wire [14:0] cart_addr;
 wire [22:0] mbc_addr;
@@ -851,7 +869,8 @@ wire [31:0] RTC_timestampOut;
 wire [47:0] RTC_savedtimeOut;
 wire rumbling;
 
-assign joy0_rumble = {8'd0, ((rumbling & rumble_en_s) ? 8'd128 : 8'd0)};
+// rumble goes to addr 1
+assign cart_tran_bank3[1] = rumbling & rumble_en_s;
 
 reg ce_32k; // 32768Hz clock for RTC
 reg [9:0] ce_32k_div;
@@ -1127,7 +1146,7 @@ lcd lcd
     .pal3           (palette[79:56]),
     .pal4           (palette[55:32]),
 
-    .sgb_border_pix ( sgb_border_pix),
+    .sgb_border_pix ( sgb_border_pix ),
     .sgb_pal_en     ( sgb_pal_en ),
     .sgb_en         ( sgb_border_en ),
     .sgb_freeze     ( sgb_lcd_freeze),
