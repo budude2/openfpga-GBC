@@ -7,8 +7,8 @@
       "description": "Game Boy",
       "author": "budude2",
       "url": "https://github.com/budude2/openfgpa-GBC",
-      "version": "1.0.3",
-      "date_release": "2024-01-04"
+      "version": "1.0.4",
+      "date_release": "2024-01-05"
     },
     "framework": {
       "target_product": "Analogue Pocket",
