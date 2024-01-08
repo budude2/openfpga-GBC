@@ -245,17 +245,6 @@ assign cart_pin30_pwroff_reset = 1'b0;  // hardware can control this
 assign cart_tran_pin31         = 1'bz;      // input
 assign cart_tran_pin31_dir     = 1'b0;  // input
 
-// link port is unused, set to input only to be safe
-// each bit may be bidirectional in some applications
-// assign port_tran_so      = 1'bz;
-// assign port_tran_so_dir  = 1'b0;     // SO is output only
-// assign port_tran_si      = 1'bz;
-// assign port_tran_si_dir  = 1'b0;     // SI is input only
-// assign port_tran_sck     = 1'bz;
-// assign port_tran_sck_dir = 1'b0;    // clock direction can change
-// assign port_tran_sd      = 1'bz;
-// assign port_tran_sd_dir  = 1'b0;     // SD is input and not used
-
 // tie off the rest of the pins we are not using
 assign cram0_a     = 'h0;
 assign cram0_dq    = {16{1'bZ}};
@@ -967,6 +956,8 @@ wire sc_int_clock_out, ser_clk_out, ser_clk_in;
 assign port_tran_sck = sc_int_clock_out ? ser_clk_out : 1'bZ;
 assign ser_clk_in = port_tran_sck;
 assign port_tran_sck_dir = sc_int_clock_out;
+assign port_tran_so_dir  = 1'b1;
+assign port_tran_si_dir  = 1'b0;
 
 // the gameboy itself
 gb gb
