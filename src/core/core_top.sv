@@ -238,7 +238,8 @@ assign cart_tran_bank2         = 8'hzz;
 assign cart_tran_bank2_dir     = 1'b0;
 assign cart_tran_bank1         = 8'hzz;
 assign cart_tran_bank1_dir     = 1'b0;
-assign cart_tran_bank0         = 4'h8; // Tie WR to 0 for rumble cart
+assign cart_tran_bank0[7]      = 1'hz;
+assign cart_tran_bank0[5:4]    = 2'hz;
 assign cart_tran_bank0_dir     = 1'b1; // Set to output for rumble cart
 assign cart_tran_pin30         = 1'b0; // reset or cs2, we let the hw control it by itself
 assign cart_tran_pin30_dir     = 1'bz;
@@ -858,8 +859,15 @@ wire [31:0] RTC_timestampOut;
 wire [47:0] RTC_savedtimeOut;
 wire rumbling;
 
-// rumble goes to addr 1
-assign cart_tran_bank3[1] = rumbling & rumble_en_s;
+rumbler rumbler_module
+(
+    .clk(clk_sys),
+    .reset(reset),
+    .rumble_en(rumble_en_s),
+    .rumbling(rumbling),
+    .cart_wr(cart_tran_bank0[6]),
+    .cart_rumble(cart_tran_bank3[1])
+);
 
 reg ce_32k; // 32768Hz clock for RTC
 reg [9:0] ce_32k_div;
