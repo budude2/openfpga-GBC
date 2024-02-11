@@ -42,7 +42,7 @@
 # ========================
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 18.1.1
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "21:31:36  JANUARY 22, 2020"
-set_global_assignment -name LAST_QUARTUS_VERSION "22.1std.2 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "23.1std.0 Lite Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:apf/build_id_gen.tcl"
 set_global_assignment -name SMART_RECOMPILE ON
@@ -793,75 +793,6 @@ set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to auto_signaltap_2|vcc -section_id auto_signaltap_2
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to auto_signaltap_2|gnd -section_id auto_signaltap_2
-set_global_assignment -name SYSTEMVERILOG_FILE gb/data_unloader.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/psram.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/data_loader.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/sound_i2s.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/sync_fifo.sv
-set_global_assignment -name QIP_FILE gb/audio/mf_audio_pll.qip
-set_global_assignment -name VHDL_FILE gb/T80/T80_Reg.vhd
-set_global_assignment -name VHDL_FILE gb/T80/T80_Pack.vhd
-set_global_assignment -name VHDL_FILE gb/T80/T80_MCode.vhd
-set_global_assignment -name VHDL_FILE gb/T80/T80_ALU.vhd
-set_global_assignment -name VHDL_FILE gb/T80/T80.vhd
-set_global_assignment -name QIP_FILE gb/T80/T80.qip
-set_global_assignment -name VHDL_FILE gb/T80/GBse.vhd
-set_global_assignment -name VERILOG_FILE gb/video.v
-set_global_assignment -name VERILOG_FILE gb/timer.v
-set_global_assignment -name VERILOG_FILE gb/sprites.v
-set_global_assignment -name VHDL_FILE gb/spram.vhd
-set_global_assignment -name SYSTEMVERILOG_FILE gb/savestate_ui.sv
-set_global_assignment -name VHDL_FILE gb/reg_savestates.vhd
-set_global_assignment -name SYSTEMVERILOG_FILE gb/megaswizzle.sv
-set_global_assignment -name VERILOG_FILE gb/link.v
-set_global_assignment -name VERILOG_FILE gb/hdma.v
-set_global_assignment -name VHDL_FILE gb/gbc_snd.vhd
-set_global_assignment -name VHDL_FILE gb/gb_statemanager.vhd
-set_global_assignment -name VHDL_FILE gb/gb_savestates.vhd
-set_global_assignment -name VHDL_FILE gb/dpram.vhd
-set_global_assignment -name SYSTEMVERILOG_FILE gb/ddram.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/cheatcodes.sv
-set_global_assignment -name VHDL_FILE gb/bus_savestates.vhd
-set_global_assignment -name VERILOG_FILE gb/mappers/tama.v
-set_global_assignment -name VERILOG_FILE gb/mappers/sachen.v
-set_global_assignment -name SYSTEMVERILOG_FILE gb/mappers/rocket.sv
-set_global_assignment -name VERILOG_FILE gb/mappers/mmm01.v
-set_global_assignment -name VERILOG_FILE gb/mappers/misc.v
-set_global_assignment -name VERILOG_FILE gb/mappers/megaduck.v
-set_global_assignment -name VERILOG_FILE gb/mappers/mbc7.v
-set_global_assignment -name VERILOG_FILE gb/mappers/mbc6.v
-set_global_assignment -name VERILOG_FILE gb/mappers/mbc5.v
-set_global_assignment -name VERILOG_FILE gb/mappers/mbc3.v
-set_global_assignment -name VERILOG_FILE gb/mappers/mbc2.v
-set_global_assignment -name VERILOG_FILE gb/mappers/mbc1.v
-set_global_assignment -name VERILOG_FILE gb/mappers/mappers.v
-set_global_assignment -name VERILOG_FILE gb/mappers/huc3.v
-set_global_assignment -name VERILOG_FILE gb/mappers/huc1.v
-set_global_assignment -name VERILOG_FILE gb/mappers/gb_camera.v
-set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/iir_filter_tap.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/iir_filter.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/filters_rom.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/filter_loader.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/dc_blocker.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/audio_mix.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/audio_filters.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/audio_mixer.sv
-set_global_assignment -name QIP_FILE gb/audio/audio.qip
-set_global_assignment -name VHDL_FILE gb/speedcontrol.vhd
-set_global_assignment -name VERILOG_FILE gb/sgb.v
-set_global_assignment -name SYSTEMVERILOG_FILE gb/sdram.sv
-set_global_assignment -name VERILOG_FILE gb/lcd.v
-set_global_assignment -name VERILOG_FILE gb/gb.v
-set_global_assignment -name VERILOG_FILE gb/cart.v
-set_global_assignment -name SYSTEMVERILOG_FILE core/core_top.sv
-set_global_assignment -name QIP_FILE apf/apf.qip
-set_global_assignment -name QIP_FILE apf/mf_ddio_bidir_12.qip
-set_global_assignment -name VERILOG_FILE core/core_bridge_cmd.v
-set_global_assignment -name SDC_FILE core/core_constraints.sdc
-set_global_assignment -name SIGNALTAP_FILE core/stp1.stp
-set_global_assignment -name QIP_FILE core/mf_pllbase.qip
-set_global_assignment -name SIP_FILE core/mf_pllbase.sip
-set_global_assignment -name SOURCE_FILE db/ap_core.cmp.rdb
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "core_top:ic|cart_top:cart|bk_addr[0]" -section_id auto_signaltap_2
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "core_top:ic|cart_top:cart|bk_addr[10]" -section_id auto_signaltap_2
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "core_top:ic|cart_top:cart|bk_addr[11]" -section_id auto_signaltap_2
@@ -1224,5 +1155,74 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=177"
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=177" -section_id auto_signaltap_2
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id auto_signaltap_2
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=556" -section_id auto_signaltap_2
-set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
+set_global_assignment -name SYSTEMVERILOG_FILE gb/data_unloader.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/psram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/data_loader.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/sound_i2s.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/sync_fifo.sv
+set_global_assignment -name QIP_FILE gb/audio/mf_audio_pll.qip
+set_global_assignment -name VHDL_FILE gb/T80/T80_Reg.vhd
+set_global_assignment -name VHDL_FILE gb/T80/T80_Pack.vhd
+set_global_assignment -name VHDL_FILE gb/T80/T80_MCode.vhd
+set_global_assignment -name VHDL_FILE gb/T80/T80_ALU.vhd
+set_global_assignment -name VHDL_FILE gb/T80/T80.vhd
+set_global_assignment -name QIP_FILE gb/T80/T80.qip
+set_global_assignment -name VHDL_FILE gb/T80/GBse.vhd
+set_global_assignment -name VERILOG_FILE gb/video.v
+set_global_assignment -name VERILOG_FILE gb/timer.v
+set_global_assignment -name VERILOG_FILE gb/sprites.v
+set_global_assignment -name VHDL_FILE gb/spram.vhd
+set_global_assignment -name SYSTEMVERILOG_FILE gb/savestate_ui.sv
+set_global_assignment -name VHDL_FILE gb/reg_savestates.vhd
+set_global_assignment -name SYSTEMVERILOG_FILE gb/megaswizzle.sv
+set_global_assignment -name VERILOG_FILE gb/link.v
+set_global_assignment -name VERILOG_FILE gb/hdma.v
+set_global_assignment -name VHDL_FILE gb/gbc_snd.vhd
+set_global_assignment -name VHDL_FILE gb/gb_statemanager.vhd
+set_global_assignment -name VHDL_FILE gb/gb_savestates.vhd
+set_global_assignment -name VHDL_FILE gb/dpram.vhd
+set_global_assignment -name SYSTEMVERILOG_FILE gb/ddram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/cheatcodes.sv
+set_global_assignment -name VHDL_FILE gb/bus_savestates.vhd
+set_global_assignment -name VERILOG_FILE gb/mappers/tama.v
+set_global_assignment -name VERILOG_FILE gb/mappers/sachen.v
+set_global_assignment -name SYSTEMVERILOG_FILE gb/mappers/rocket.sv
+set_global_assignment -name VERILOG_FILE gb/mappers/mmm01.v
+set_global_assignment -name VERILOG_FILE gb/mappers/misc.v
+set_global_assignment -name VERILOG_FILE gb/mappers/megaduck.v
+set_global_assignment -name VERILOG_FILE gb/mappers/mbc7.v
+set_global_assignment -name VERILOG_FILE gb/mappers/mbc6.v
+set_global_assignment -name VERILOG_FILE gb/mappers/mbc5.v
+set_global_assignment -name VERILOG_FILE gb/mappers/mbc3.v
+set_global_assignment -name VERILOG_FILE gb/mappers/mbc2.v
+set_global_assignment -name VERILOG_FILE gb/mappers/mbc1.v
+set_global_assignment -name VERILOG_FILE gb/mappers/mappers.v
+set_global_assignment -name VERILOG_FILE gb/mappers/huc3.v
+set_global_assignment -name VERILOG_FILE gb/mappers/huc1.v
+set_global_assignment -name VERILOG_FILE gb/mappers/gb_camera.v
+set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/iir_filter_tap.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/iir_filter.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/filters_rom.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/filter_loader.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/dc_blocker.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/audio_mix.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/filters/audio_filters.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/audio/audio_mixer.sv
+set_global_assignment -name QIP_FILE gb/audio/audio.qip
+set_global_assignment -name VHDL_FILE gb/speedcontrol.vhd
+set_global_assignment -name VERILOG_FILE gb/sgb.v
+set_global_assignment -name SYSTEMVERILOG_FILE gb/sdram.sv
+set_global_assignment -name VERILOG_FILE gb/lcd.v
+set_global_assignment -name VERILOG_FILE gb/gb.v
+set_global_assignment -name VERILOG_FILE gb/cart.v
+set_global_assignment -name SYSTEMVERILOG_FILE core/core_top.sv
+set_global_assignment -name QIP_FILE apf/apf.qip
+set_global_assignment -name QIP_FILE apf/mf_ddio_bidir_12.qip
+set_global_assignment -name VERILOG_FILE core/core_bridge_cmd.v
+set_global_assignment -name SDC_FILE core/core_constraints.sdc
+set_global_assignment -name SIGNALTAP_FILE core/stp1.stp
+set_global_assignment -name QIP_FILE core/mf_pllbase.qip
+set_global_assignment -name SIP_FILE core/mf_pllbase.sip
+set_global_assignment -name SOURCE_FILE db/ap_core.cmp.rdb

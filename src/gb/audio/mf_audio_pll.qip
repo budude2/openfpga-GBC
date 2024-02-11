@@ -1,5 +1,5 @@
 set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_TOOL_NAME "altera_pll"
-set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_TOOL_VERSION "22.1"
+set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_TOOL_VERSION "23.1"
 set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_TOOL_ENV "mwpim"
 set_global_assignment -library "mf_audio_pll" -name MISC_FILE [file join $::quartus(qip_path) "mf_audio_pll.cmp"]
 set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_TARGETED_DEVICE_FAMILY "Cyclone V"
@@ -11,14 +11,14 @@ set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_CO
 set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
 set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_COMPONENT_INTERNAL "Off"
 set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
-set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_COMPONENT_VERSION "MjIuMQ=="
+set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_COMPONENT_VERSION "MjMuMQ=="
 set_global_assignment -entity "mf_audio_pll" -library "mf_audio_pll" -name IP_COMPONENT_DESCRIPTION "SW50ZWwgUGhhc2UtTG9ja2VkIExvb3A="
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_NAME "bWZfYXVkaW9fcGxsXzAwMDI="
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_DISPLAY_NAME "UExMIEludGVsIEZQR0EgSVA="
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_INTERNAL "Off"
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
-set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_VERSION "MjIuMQ=="
+set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_VERSION "MjMuMQ=="
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_DESCRIPTION "SW50ZWwgUGhhc2UtTG9ja2VkIExvb3A="
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_PARAMETER "ZGVidWdfcHJpbnRfb3V0cHV0::ZmFsc2U=::ZGVidWdfcHJpbnRfb3V0cHV0"
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_COMPONENT_PARAMETER "ZGVidWdfdXNlX3JiY190YWZfbWV0aG9k::ZmFsc2U=::ZGVidWdfdXNlX3JiY190YWZfbWV0aG9k"
@@ -334,5 +334,5 @@ set_global_assignment -library "mf_audio_pll" -name VERILOG_FILE [file join $::q
 set_global_assignment -library "mf_audio_pll" -name QIP_FILE [file join $::quartus(qip_path) "mf_audio_pll/mf_audio_pll_0002.qip"]
 
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_TOOL_NAME "altera_pll"
-set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_TOOL_VERSION "22.1"
+set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_TOOL_VERSION "23.1"
 set_global_assignment -entity "mf_audio_pll_0002" -library "mf_audio_pll" -name IP_TOOL_ENV "mwpim"
