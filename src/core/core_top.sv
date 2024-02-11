@@ -424,7 +424,6 @@ end
     wire            bw_en;
 
 core_bridge_cmd icb (
-
     .clk                        ( clk_74a                    ),
     .reset_n                    ( reset_n                    ),
 
@@ -604,177 +603,42 @@ data_loader #(
   .write_data(ioctl_dout)
 );
 
-always @(posedge clk_74a or negedge pll_core_locked) begin
-    if (~pll_core_locked) begin
-        datatable_addr <= 0;
-        datatable_data <= 0;
-        datatable_wren <= 0;
-    end else begin
-        // Write sram size
-        datatable_wren <= 1;
-        datatable_data <= cart_has_save ? 32'h0000_8009 : 32'h0;
-        // Data slot index 1, not id 1
-        datatable_addr <= 1 * 2 + 1;
-    end
-end
+  logic bk_wr, bk_rtc_wr;
+  logic [16:0] bk_addr;
+  logic [15:0] bk_data, bk_q;
+  logic [31:0] sd_read_data;
 
-wire [31:0] sd_read_data;
+  save_handler save_handler (
+    .clk_74a              (clk_74a),
+    .clk_sys              (clk_sys),
+    .reset                (reset),
+    .external_reset_s     (external_reset_s),
+    .pll_core_locked      (pll_core_locked),
 
-wire [16:0] sd_buff_addr_in;
-wire [16:0] sd_buff_addr_out;
+    .bridge_rd            (bridge_rd),
+    .bridge_wr            (bridge_wr),
+    .bridge_endian_little (bridge_endian_little),
+    .bridge_addr          (bridge_addr),
+    .bridge_wr_data       (bridge_wr_data),
+    .sd_read_data         (sd_read_data),
 
-wire [16:0] sd_buff_addr = bk_rtc_wr ? currRTCaddr : (write_en ? sd_buff_addr_in : sd_buff_addr_out);
+    .datatable_addr       (datatable_addr),
+    .datatable_wren       (datatable_wren),
+    .datatable_data       (datatable_data),
 
-wire [15:0] sd_buff_din, bk_q;
-wire [15:0] sd_buff_dout;
+    .bk_wr                (bk_wr),
+    .bk_rtc_wr            (bk_rtc_wr),
+    .bk_addr              (bk_addr),
+    .bk_data              (bk_data),
+    .bk_q                 (bk_q),
 
-wire [15:0] bk_data = bk_rtc_wr ? rtc_data[currRTCaddr[16:1]] : sd_buff_dout;
-
-wire bk_wr, rtc_wr, rtc_wr_old, write_en;
-
-reg bk_rtc_wr, rtc_loaded;
-
-always_comb begin
-    if (sd_buff_addr_out[15:8] == 8'h80) begin
-        case(sd_buff_addr_out[8:1])
-            8'h00 : sd_buff_din = RTC_timestampOut[15:0];
-            8'h01 : sd_buff_din = RTC_timestampOut[31:16];
-            8'h02 : sd_buff_din = RTC_savedtimeOut[15:0];
-            8'h03 : sd_buff_din = RTC_savedtimeOut[31:16];
-            8'h04 : sd_buff_din = RTC_savedtimeOut[47:32];
-            default  : sd_buff_din = 16'hFFFF;
-        endcase
-    end else begin
-        sd_buff_din = bk_q;
-    end
-end
-
-always_comb begin
-    if (sd_buff_addr_in[15:8] == 8'h80) begin
-        bk_wr  = 0;
-        rtc_wr = write_en;
-    end else begin
-        bk_wr  = write_en;
-        rtc_wr = 0;
-    end
-end
-
-reg [15:0] rtc_data[5];
-
-always @(posedge clk_sys) begin
-    rtc_wr_old <= rtc_wr;
-
-    if(external_reset_s | cart_download) begin
-        rtc_loaded <= 0;
-    end
-    else if(~rtc_wr_old & rtc_wr) begin
-        rtc_loaded <= 1;
-    end
-    else begin
-        rtc_loaded <= rtc_loaded;
-    end
-end
-
-always @(posedge clk_sys) begin
-    if(rtc_wr) begin
-        rtc_data[sd_buff_addr_in[8:1]] <= sd_buff_dout;
-    end
-end
-
-typedef enum {
-    READ,
-    WRITE,
-    INC,
-    STOP
-} stateType;
-
-stateType currState, nextState;
-
-wire [16:0] currRTCaddr, nextRTCaddr;
-
-always_ff @(posedge clk_sys) begin
-    if(reset) begin
-        currState <= READ;
-        currRTCaddr <= 0;
-
-    end else begin
-        currState <= nextState;
-        currRTCaddr <= nextRTCaddr;
-    end
-end
-
-always_comb begin
-    nextState = currState;
-    nextRTCaddr = currRTCaddr;
-    bk_rtc_wr = 0;
-
-    case(currState)
-
-        READ: begin
-            if(rtc_loaded) begin
-                nextState = WRITE;
-            end
-        end
-
-        WRITE: begin
-            bk_rtc_wr = 1;
-            nextState = INC;
-        end
-
-        INC: begin
-            nextRTCaddr = currRTCaddr + 2;
-
-            if(nextRTCaddr < 10) begin
-                nextState = READ;
-            end else begin
-                nextState = STOP;
-            end
-        end
-
-        STOP: begin
-            nextState = STOP;
-        end
-    endcase
-end
-
-data_unloader #(
-      .ADDRESS_MASK_UPPER_4(4'h2),
-      .ADDRESS_SIZE(17),
-      .READ_MEM_CLOCK_DELAY(15),
-      .INPUT_WORD_SIZE(2)
-  ) save_data_unloader (
-      .clk_74a(clk_74a),
-      .clk_memory(clk_sys),
-
-      .bridge_rd(bridge_rd),
-      .bridge_endian_little(bridge_endian_little),
-      .bridge_addr(bridge_addr),
-      .bridge_rd_data(sd_read_data),
-
-      .read_en  (),
-      .read_addr(sd_buff_addr_out),
-      .read_data(sd_buff_din)
-);
-
-data_loader #(
-  .ADDRESS_MASK_UPPER_4(4'h2),
-  .ADDRESS_SIZE(17),
-  .WRITE_MEM_CLOCK_DELAY(15),
-  .WRITE_MEM_EN_CYCLE_LENGTH(3),
-  .OUTPUT_WORD_SIZE(2)
-) save_data_loader (
-  .clk_74a(clk_74a),
-  .clk_memory(clk_sys),
-
-  .bridge_wr(bridge_wr),
-  .bridge_endian_little(bridge_endian_little),
-  .bridge_addr(bridge_addr),
-  .bridge_wr_data(bridge_wr_data),
-
-  .write_en  (write_en),
-  .write_addr(sd_buff_addr_in),
-  .write_data(sd_buff_dout)
-);
+    .cart_has_save        (cart_has_save),
+    .cart_download        (cart_download),
+    .ram_mask_file        (ram_mask_file),
+    .RTC_timestampOut     (RTC_timestampOut),
+    .RTC_savedtimeOut     (RTC_savedtimeOut),
+    .RTC_inuse            (RTC_inuse)
+    );
 
 //////// Start GB/GBC Stuff ////////
 
@@ -858,6 +722,7 @@ wire cart_has_save;
 wire [31:0] RTC_timestampOut;
 wire [47:0] RTC_savedtimeOut;
 wire rumbling;
+wire RTC_inuse;
 
 rumbler rumbler_module
 (
@@ -920,11 +785,11 @@ cart_top cart
     .ioctl_dout                 ( ioctl_dout        ),
     .ioctl_wait                 ( ioctl_wait        ),
 
-    .bk_wr                      ( bk_wr        ),
-    .bk_rtc_wr                  ( bk_rtc_wr       ),
-    .bk_addr                    ( sd_buff_addr[16:1] ),
-    .bk_data                    ( bk_data      ),
-    .bk_q                       ( bk_q       ),
+    .bk_wr                      ( bk_wr             ),
+    .bk_rtc_wr                  ( bk_rtc_wr         ),
+    .bk_addr                    ( bk_addr           ),
+    .bk_data                    ( bk_data           ),
+    .bk_q                       ( bk_q              ),
     .img_size                   ( 0                 ),
 
     .rom_di                     ( rom_do            ),
@@ -935,7 +800,7 @@ cart_top cart
     .RTC_time                   ( {rtc_valid, rtc_epoch_seconds} ),
     .RTC_timestampOut           ( RTC_timestampOut  ),
     .RTC_savedtimeOut           ( RTC_savedtimeOut  ),
-    .RTC_inuse                  ( ),
+    .RTC_inuse                  ( RTC_inuse ),
 
     .SaveStateExt_Din           ( 0                 ),
     .SaveStateExt_Adr           ( 0                 ),
@@ -1089,16 +954,9 @@ gb gb
 // Sound
 
 wire [15:0] audio_l, audio_r;
-reg  [15:0] audio_buffer_l = 0, audio_buffer_r = 0;
 
 assign audio_l = (fast_forward && ~ff_snd_en_s) ? 16'd0 : GB_AUDIO_L;
 assign audio_r = (fast_forward && ~ff_snd_en_s) ? 16'd0 : GB_AUDIO_R;
-
-// Buffer audio to have better fitting on audio route
-always @(posedge clk_sys) begin
-    audio_buffer_l <= audio_l;
-    audio_buffer_r <= audio_r;
-end
 
 audio_mixer #(
   .DW(16),
@@ -1111,8 +969,8 @@ audio_mixer #(
   .mix          (0),
 
   .is_signed    (1),
-  .core_l       (audio_buffer_l),
-  .core_r       (audio_buffer_r),
+  .core_l       (audio_r),
+  .core_r       (audio_l),
 
   .audio_mclk   (audio_mclk),
   .audio_lrck   (audio_lrck),
