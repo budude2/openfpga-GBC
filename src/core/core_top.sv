@@ -1148,7 +1148,7 @@ sgb sgb (
 wire ce_cpu, ce_cpu2x;
 wire cart_act = cart_wr | cart_rd;
 
-wire fastforward = cont1_key_s[9] && !ioctl_download;
+wire fastforward = cont1_key[9] && !ioctl_download;
 wire ff_on;
 
 wire sleep_savestate;
