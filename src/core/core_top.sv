@@ -969,8 +969,8 @@ audio_mixer #(
   .mix          (0),
 
   .is_signed    (1),
-  .core_l       (audio_r),
-  .core_r       (audio_l),
+  .core_l       (audio_l),
+  .core_r       (audio_r),
 
   .audio_mclk   (audio_mclk),
   .audio_lrck   (audio_lrck),
