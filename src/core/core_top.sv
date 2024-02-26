@@ -306,6 +306,7 @@ end
 
 reg [31:0] reset_delay  = 0;
 reg rumble_en           = 0;
+reg ff_en               = 0;
 reg ff_snd_en           = 0;
 reg [1:0] tint          = 0;
 reg originalcolors;
@@ -330,10 +331,13 @@ always @(posedge clk_74a) begin
         32'h208: begin
           originalcolors <= bridge_wr_data[0];
         end
-        32'h20C: begin
-          ff_snd_en <= bridge_wr_data[0];
+		32'h20C: begin
+          ff_en <= bridge_wr_data[0];
         end
         32'h210: begin
+          ff_snd_en <= bridge_wr_data[0];
+        end
+        32'h214: begin
           tint <= bridge_wr_data[1:0];
         end
       endcase
@@ -1148,7 +1152,7 @@ sgb sgb (
 wire ce_cpu, ce_cpu2x;
 wire cart_act = cart_wr | cart_rd;
 
-wire fastforward = cont1_key_s[9] && !ioctl_download;
+wire fastforward = ff_en && cont1_key_s[9] && !ioctl_download;
 wire ff_on;
 
 wire sleep_savestate;
