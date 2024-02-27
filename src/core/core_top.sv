@@ -331,7 +331,7 @@ always @(posedge clk_74a) begin
         32'h208: begin
           originalcolors <= bridge_wr_data[0];
         end
-		32'h20C: begin
+        32'h20C: begin
           ff_en <= bridge_wr_data[0];
         end
         32'h210: begin
@@ -553,20 +553,22 @@ synch_3 #(
     clk_sys
 );
 
-wire rumble_en_s, originalcolors_s, ff_snd_en_s;
+wire rumble_en_s, originalcolors_s, ff_snd_en_s, ff_en_s;
 
 synch_3 #(
-    .WIDTH(3)
+    .WIDTH(4)
 ) settings (
     {
         rumble_en,
         originalcolors,
-        ff_snd_en
+        ff_snd_en,
+        ff_en
     },
     {
         rumble_en_s,
         originalcolors_s,
-        ff_snd_en_s
+        ff_snd_en_s,
+        ff_en_s
     },
     clk_sys
 );
@@ -1152,7 +1154,7 @@ sgb sgb (
 wire ce_cpu, ce_cpu2x;
 wire cart_act = cart_wr | cart_rd;
 
-wire fastforward = ff_en && cont1_key_s[9] && !ioctl_download;
+wire fastforward = ff_en_s && cont1_key_s[9] && !ioctl_download;
 wire ff_on;
 
 wire sleep_savestate;
