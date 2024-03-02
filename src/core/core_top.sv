@@ -300,7 +300,7 @@ always @(*) begin
     endcase
 
     if (bridge_addr[31:28] == 4'h2) begin
-        bridge_rd_data <= sd_read_data;
+        bridge_rd_data <= save_rd_data;
     end
 end
 
@@ -612,7 +612,8 @@ data_loader #(
   logic bk_wr, bk_rtc_wr;
   logic [16:0] bk_addr;
   logic [15:0] bk_data, bk_q;
-  logic [31:0] sd_read_data;
+  logic [31:0] save_rd_data;
+  logic [31:0] loaded_save_size;
 
   save_handler save_handler (
     .clk_74a              (clk_74a),
@@ -626,11 +627,12 @@ data_loader #(
     .bridge_endian_little (bridge_endian_little),
     .bridge_addr          (bridge_addr),
     .bridge_wr_data       (bridge_wr_data),
-    .sd_read_data         (sd_read_data),
+    .bridge_rd_data       (save_rd_data),
 
     .datatable_addr       (datatable_addr),
     .datatable_wren       (datatable_wren),
     .datatable_data       (datatable_data),
+    .datatable_q          (datatable_q),
 
     .bk_wr                (bk_wr),
     .bk_rtc_wr            (bk_rtc_wr),
@@ -643,7 +645,8 @@ data_loader #(
     .ram_mask_file        (ram_mask_file),
     .RTC_timestampOut     (RTC_timestampOut),
     .RTC_savedtimeOut     (RTC_savedtimeOut),
-    .RTC_inuse            (RTC_inuse)
+    .RTC_inuse            (RTC_inuse),
+    .loaded_save_size     (loaded_save_size)
     );
 
 //////// Start GB/GBC Stuff ////////
@@ -796,7 +799,7 @@ cart_top cart
     .bk_addr                    ( bk_addr           ),
     .bk_data                    ( bk_data           ),
     .bk_q                       ( bk_q              ),
-    .img_size                   ( 0                 ),
+    .img_size                   ( loaded_save_size  ),
 
     .rom_di                     ( rom_do            ),
 

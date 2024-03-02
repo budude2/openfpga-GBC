@@ -216,9 +216,9 @@ always @(posedge clk_sys) begin
 			rtc_seconds	 <= RTC_savedtimeIn[5:0];
 			rtc_minutes	 <= RTC_savedtimeIn[11:6];
 			rtc_hours	 <= RTC_savedtimeIn[16:12];
-			rtc_days		 <= RTC_savedtimeIn[26:17];
+			rtc_days	 <= RTC_savedtimeIn[26:17];
 			rtc_overflow <= RTC_savedtimeIn[27];
-			rtc_halt		 <= RTC_savedtimeIn[28];
+			rtc_halt	 <= RTC_savedtimeIn[28];
 
 			RTC_inuse    <= 1'b1;
 
