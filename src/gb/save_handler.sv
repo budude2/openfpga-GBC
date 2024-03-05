@@ -73,7 +73,7 @@ module save_handler (
     .write_data           (bk_data_int)
   );
 
-  assign bk_rtc_wr  = bk_rtc_wr_out;
+  assign bk_rtc_wr = rtc_wr_out;
 
   logic [17:0] save_size_bytes;
   logic state;
@@ -83,8 +83,10 @@ module save_handler (
   logic [15:0] unloader_din;
   logic [15:0] loader_dout;
   logic write_en;
-  logic bk_rtc_wr_int;
+  logic rtc_wr_in, rtc_wr_out;
   logic [15:0] bk_data_int;
+  logic [16:0] RTCaddr;
+  logic [15:0] rtc_dout;
 
   assign loaded_save_size = datatable_q2;
 
@@ -137,8 +139,8 @@ module save_handler (
   always_comb begin
     if (write_en) begin
       bk_addr = loader_addr[17:1];
-    end else if (bk_rtc_wr_out) begin
-      bk_addr = currRTCaddr;
+    end else if (rtc_wr_out) begin
+      bk_addr = RTCaddr;
     end else begin
       bk_addr = unloader_addr[17:1];
     end
@@ -161,109 +163,39 @@ module save_handler (
 
   always_comb begin
     if (loader_addr >= save_size_bytes) begin
-      bk_wr         = 0;
-      bk_rtc_wr_int = write_en;
+      bk_wr     = 0;
+      rtc_wr_in = write_en;
     end else begin
-      bk_wr         = write_en;
-      bk_rtc_wr_int = 0;
+      bk_wr     = write_en;
+      rtc_wr_in = 0;
     end
   end
 
   always_comb begin
-    if(bk_rtc_wr_out) begin
+    if(rtc_wr_out) begin
       bk_data = rtc_dout;
     end else begin
       bk_data = bk_data_int;
     end
   end
 
-  logic bk_rtc_wr_int_old, rtc_loaded;
+RTC_loader RTC_loader(
+  .clk_sys(clk_sys),
+  .reset(reset),
+  .external_reset_s(external_reset_s),
 
-  always @(posedge clk_sys) begin
-    bk_rtc_wr_int_old <= bk_rtc_wr_int;
+  .cart_download(cart_download),
+  .loading_done(loading_done),
+  .RTC_valid(RTC_valid),
 
-    if(external_reset_s | cart_download) begin
-      rtc_loaded <= 0;
-    end else if(~bk_rtc_wr_int_old & bk_rtc_wr_int) begin
-      rtc_loaded <= 1;
-    end else begin
-      rtc_loaded <= rtc_loaded;
-    end
-  end
+  .addr_in(loader_addr[17:1]),
+  .data_in(bk_data_int),
+  .wr_in(rtc_wr_in),
 
- typedef enum {
-    READ,
-    WAIT,
-    WRITE,
-    INC,
-    STOP
-  } stateType;
-
-  stateType currState, nextState;
-  logic [17:0] currRTCaddr, nextRTCaddr;
-  logic bk_rtc_wr_out;
-
-  always_ff @(posedge clk_sys) begin
-    if(reset) begin
-      currState   <= READ;
-      currRTCaddr <= 0;
-
-    end else begin
-      currState   <= nextState;
-      currRTCaddr <= nextRTCaddr;
-    end
-  end
-
-  always_comb begin
-    nextState     = currState;
-    nextRTCaddr   = currRTCaddr;
-    bk_rtc_wr_out = 0;
-    loading_done  = 0;
-
-    case(currState)
-
-      READ: begin
-        if(rtc_loaded & RTC_valid) begin
-          nextState = WAIT;
-        end
-      end
-
-      WAIT: begin
-        nextState = WRITE;
-      end
-
-      WRITE: begin
-        bk_rtc_wr_out = 1;
-        nextState = INC;
-      end
-
-      INC: begin
-        nextRTCaddr = currRTCaddr + 1;
-
-        if(nextRTCaddr < 10) begin
-          nextState = READ;
-        end else begin
-          nextState = STOP;
-        end
-      end
-
-      STOP: begin
-        loading_done = 1;
-      end
-    endcase
-  end
-
-  logic [15:0] rtc_dout;
-
-  rtc_ram rtc_ram_inst (
-    .clock      ( clk_sys ),
-    .wraddress  ( loader_addr[17:1] ),
-    .data       ( bk_data_int ),
-    .wren       ( bk_rtc_wr_int ),
-
-    .rdaddress  ( currRTCaddr ),
-    .q          ( rtc_dout ) // 1 cycle delay after address set
-  );
+  .addr_out(RTCaddr),
+  .data_out(rtc_dout),
+  .wr_out(rtc_wr_out)
+);
 
 
 endmodule : save_handler
