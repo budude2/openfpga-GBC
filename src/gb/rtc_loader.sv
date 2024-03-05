@@ -65,6 +65,8 @@ module RTC_loader(
       READ: begin
         if(rtc_loaded & RTC_valid) begin
           nextState = WAIT;
+        end else begin
+          nextState = STOP;
         end
       end
 

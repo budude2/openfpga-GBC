@@ -614,6 +614,7 @@ data_loader #(
   logic [15:0] bk_data, bk_q;
   logic [31:0] save_rd_data;
   logic [31:0] loaded_save_size;
+  logic loading_done;
 
   save_handler save_handler (
     .clk_74a              (clk_74a),
@@ -647,7 +648,8 @@ data_loader #(
     .RTC_savedtimeOut     (RTC_savedtimeOut),
     .RTC_inuse            (RTC_inuse),
     .RTC_valid            (rtc_valid),
-    .loaded_save_size     (loaded_save_size)
+    .loaded_save_size     (loaded_save_size),
+    .loading_done         (loading_done)
     );
 
 //////// Start GB/GBC Stuff ////////
@@ -864,7 +866,7 @@ assign port_tran_si_dir  = 1'b0;
 // the gameboy itself
 gb gb
 (
-    .reset                  ( reset             ),
+    .reset                  ( reset | ~loading_done ),
     
     .clk_sys                ( clk_sys           ),
     .ce                     ( ce_cpu            ),   // the whole gameboy runs on 4mhnz
@@ -1047,7 +1049,7 @@ wire sgb_pal_en;
 wire sgb_border_en = sgb_en[1];
 
 sgb sgb (
-    .reset              ( reset       ),
+    .reset              ( reset | ~loading_done ),
     .clk_sys            ( clk_sys     ),
     .ce                 ( ce_cpu      ),
 
