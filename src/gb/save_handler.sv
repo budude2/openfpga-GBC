@@ -29,7 +29,9 @@ module save_handler (
   input logic  [31:0]  RTC_timestampOut,
   input logic  [47:0]  RTC_savedtimeOut,
   input logic          RTC_inuse,
-  output logic [31:0]  loaded_save_size
+  input logic          RTC_valid,
+  output logic [31:0]  loaded_save_size,
+  output logic         loading_done
 );
 
   data_unloader #(
@@ -68,14 +70,21 @@ module save_handler (
 
     .write_en             (write_en),
     .write_addr           (loader_addr),
-    .write_data           (bk_data)
+    .write_data           (bk_data_int)
   );
 
-  assign bk_addr = buff_addr[17:1];
+  assign bk_rtc_wr  = bk_rtc_wr_out;
 
   logic [17:0] save_size_bytes;
   logic state;
   logic [31:0] datatable_q2;
+  logic [17:0] loader_addr;
+  logic [17:0] unloader_addr;
+  logic [15:0] unloader_din;
+  logic [15:0] loader_dout;
+  logic write_en;
+  logic bk_rtc_wr_int;
+  logic [15:0] bk_data_int;
 
   assign loaded_save_size = datatable_q2;
 
@@ -101,7 +110,7 @@ module save_handler (
         datatable_wren <= 1;
 
         if( RTC_inuse ) begin
-          datatable_data <= save_size_bytes + 9;
+          datatable_data <= save_size_bytes + 16;
         end else begin
           datatable_data <= save_size_bytes;
         end
@@ -125,21 +134,15 @@ module save_handler (
     end
   end
 
-  logic [17:0] loader_addr;
-  logic [17:0] unloader_addr;
-  logic [17:0] buff_addr;
-
   always_comb begin
     if (write_en) begin
-      buff_addr = loader_addr;
+      bk_addr = loader_addr[17:1];
+    end else if (bk_rtc_wr_out) begin
+      bk_addr = currRTCaddr;
     end else begin
-      buff_addr = unloader_addr;
+      bk_addr = unloader_addr[17:1];
     end
   end
-
-  logic [15:0] unloader_din;
-  logic [15:0] loader_dout;
-  logic write_en;
 
   always_comb begin
     if (unloader_addr >= save_size_bytes) begin
@@ -158,12 +161,109 @@ module save_handler (
 
   always_comb begin
     if (loader_addr >= save_size_bytes) begin
-      bk_wr     = 0;
-      bk_rtc_wr = write_en;
+      bk_wr         = 0;
+      bk_rtc_wr_int = write_en;
     end else begin
-      bk_wr     = write_en;
-      bk_rtc_wr = 0;
+      bk_wr         = write_en;
+      bk_rtc_wr_int = 0;
     end
   end
+
+  always_comb begin
+    if(bk_rtc_wr_out) begin
+      bk_data = rtc_dout;
+    end else begin
+      bk_data = bk_data_int;
+    end
+  end
+
+  logic bk_rtc_wr_int_old, rtc_loaded;
+
+  always @(posedge clk_sys) begin
+    bk_rtc_wr_int_old <= bk_rtc_wr_int;
+
+    if(external_reset_s | cart_download) begin
+      rtc_loaded <= 0;
+    end else if(~bk_rtc_wr_int_old & bk_rtc_wr_int) begin
+      rtc_loaded <= 1;
+    end else begin
+      rtc_loaded <= rtc_loaded;
+    end
+  end
+
+ typedef enum {
+    READ,
+    WAIT,
+    WRITE,
+    INC,
+    STOP
+  } stateType;
+
+  stateType currState, nextState;
+  logic [17:0] currRTCaddr, nextRTCaddr;
+  logic bk_rtc_wr_out;
+
+  always_ff @(posedge clk_sys) begin
+    if(reset) begin
+      currState   <= READ;
+      currRTCaddr <= 0;
+
+    end else begin
+      currState   <= nextState;
+      currRTCaddr <= nextRTCaddr;
+    end
+  end
+
+  always_comb begin
+    nextState     = currState;
+    nextRTCaddr   = currRTCaddr;
+    bk_rtc_wr_out = 0;
+    loading_done  = 0;
+
+    case(currState)
+
+      READ: begin
+        if(rtc_loaded & RTC_valid) begin
+          nextState = WAIT;
+        end
+      end
+
+      WAIT: begin
+        nextState = WRITE;
+      end
+
+      WRITE: begin
+        bk_rtc_wr_out = 1;
+        nextState = INC;
+      end
+
+      INC: begin
+        nextRTCaddr = currRTCaddr + 1;
+
+        if(nextRTCaddr < 10) begin
+          nextState = READ;
+        end else begin
+          nextState = STOP;
+        end
+      end
+
+      STOP: begin
+        loading_done = 1;
+      end
+    endcase
+  end
+
+  logic [15:0] rtc_dout;
+
+  rtc_ram rtc_ram_inst (
+    .clock      ( clk_sys ),
+    .wraddress  ( loader_addr[17:1] ),
+    .data       ( bk_data_int ),
+    .wren       ( bk_rtc_wr_int ),
+
+    .rdaddress  ( currRTCaddr ),
+    .q          ( rtc_dout ) // 1 cycle delay after address set
+  );
+
 
 endmodule : save_handler

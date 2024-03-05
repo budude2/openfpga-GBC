@@ -231,7 +231,7 @@ always @(posedge clk_sys) begin
 				end
 				1: rtc_minutes	  <= cart_di[5:0]; 
 				2: rtc_hours	  <= cart_di[4:0]; 
-				3: rtc_days[7:0] <= cart_di; 
+				3: rtc_days[7:0]  <= cart_di; 
 				4: begin
 					rtc_days[8]   <= cart_di[0]; 
 					rtc_halt      <= cart_di[6]; 

@@ -646,6 +646,7 @@ data_loader #(
     .RTC_timestampOut     (RTC_timestampOut),
     .RTC_savedtimeOut     (RTC_savedtimeOut),
     .RTC_inuse            (RTC_inuse),
+    .RTC_valid            (rtc_valid),
     .loaded_save_size     (loaded_save_size)
     );
 
