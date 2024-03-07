@@ -753,6 +753,20 @@ always @(posedge clk_sys) begin
     ce_32k <= !ce_32k_div;
 end
 
+logic [32:0] rtc_data_s;
+
+sync_fifo #(
+    .WIDTH(33)
+) RTC_FIFO (
+    .clk_write(clk_74a),
+    .clk_read(clk_sys),
+
+    .write_en(rtc_valid),
+    .data({rtc_valid, rtc_epoch_seconds}),
+    .data_s(rtc_data_s),
+    .write_en_s()
+);
+
 cart_top cart
 (
     .reset                      ( reset             ),
@@ -809,7 +823,7 @@ cart_top cart
     .joystick_analog_0          ( 0                 ),
 
     .ce_32k                     ( ce_32k            ),
-    .RTC_time                   ( {rtc_valid, rtc_epoch_seconds} ),
+    .RTC_time                   ( rtc_data_s ),
     .RTC_timestampOut           ( RTC_timestampOut  ),
     .RTC_savedtimeOut           ( RTC_savedtimeOut  ),
     .RTC_inuse                  ( RTC_inuse ),
