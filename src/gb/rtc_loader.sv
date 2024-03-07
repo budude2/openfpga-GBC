@@ -75,7 +75,7 @@ module RTC_loader(
       end
 
       WRITE: begin
-        wr_out = 1;
+        wr_out    = 1;
         nextState = INC;
       end
 

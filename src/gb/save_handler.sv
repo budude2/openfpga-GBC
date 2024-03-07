@@ -34,6 +34,8 @@ module save_handler (
   output logic         loading_done
 );
 
+  assign loaded_save_size = 0;
+
   data_unloader #(
     .ADDRESS_MASK_UPPER_4 (4'h2),
     .ADDRESS_SIZE         (18),
@@ -76,8 +78,6 @@ module save_handler (
   assign bk_rtc_wr = rtc_wr_out;
 
   logic [17:0] save_size_bytes;
-  logic state;
-  logic [31:0] datatable_q2;
   logic [17:0] loader_addr;
   logic [17:0] unloader_addr;
   logic [15:0] unloader_din;
@@ -88,34 +88,22 @@ module save_handler (
   logic [16:0] RTCaddr;
   logic [15:0] rtc_dout;
 
-  assign loaded_save_size = datatable_q2;
 
   always_ff @(posedge clk_74a or negedge pll_core_locked) begin
     if (~pll_core_locked) begin
       datatable_addr <= 0;
       datatable_data <= 0;
       datatable_wren <= 0;
-      state          <= 0;
-      datatable_q2   <= 0;
     end else begin
       // Data slot index 1, not id 1
       datatable_addr <= 1 * 2 + 1;
+      // Write sram size
+      datatable_wren <= 1;
 
-      if ( ~state ) begin
-        datatable_q2 <= datatable_q;
-
-        if (datatable_q2 != datatable_q) begin
-          state <= 1;
-        end
+      if(RTC_inuse) begin
+        datatable_data <= save_size_bytes + 16;
       end else begin
-        // Write sram size
-        datatable_wren <= 1;
-
-        if( RTC_inuse ) begin
-          datatable_data <= save_size_bytes + 16;
-        end else begin
-          datatable_data <= save_size_bytes;
-        end
+        datatable_data <= save_size_bytes;
       end
     end
   end
@@ -196,6 +184,5 @@ RTC_loader RTC_loader(
   .data_out(rtc_dout),
   .wr_out(rtc_wr_out)
 );
-
 
 endmodule : save_handler

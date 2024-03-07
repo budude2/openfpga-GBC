@@ -959,8 +959,8 @@ gb gb
     .SAVE_out_be            (                   ),            
     .SAVE_out_done          ( 0                 ),            // should be one cycle high when write is done or read value is valid
     
-    .rewind_on              ( rw_en             ),
-    .rewind_active          ( rw_en & cont1_key_s[8] )
+    .rewind_on              ( 0             ),
+    .rewind_active          ( 0 )
 );
 
 // Sound
