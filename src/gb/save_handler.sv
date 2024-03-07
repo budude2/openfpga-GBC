@@ -89,8 +89,8 @@ module save_handler (
   logic [15:0] rtc_dout;
 
 
-  always_ff @(posedge clk_74a or negedge pll_core_locked) begin
-    if (~pll_core_locked) begin
+  always_ff @(posedge clk_74a) begin
+    if (reset) begin
       datatable_addr <= 0;
       datatable_data <= 0;
       datatable_wren <= 0;
