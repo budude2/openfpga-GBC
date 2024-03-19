@@ -31,10 +31,12 @@ module save_handler (
   input logic          RTC_inuse,
   input logic          RTC_valid,
   output logic [31:0]  loaded_save_size,
-  output logic         loading_done
+  output logic         loading_done,
+  output logic [17:0]  save_size_bytes_ext
 );
 
   assign loaded_save_size = 0;
+  assign save_size_bytes_ext = save_size_bytes;
 
   data_unloader #(
     .ADDRESS_MASK_UPPER_4 (4'h2),
