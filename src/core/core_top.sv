@@ -626,6 +626,8 @@ save_handler save_handler
   logic ss_rnw, ss_req, ss_ack;
   logic [7:0] ss_be;
 
+  logic [31:0] save_state_bridge_read_data;
+
   save_state_controller save_state_controller (
     .clk_74a                      ( clk_74a ),
     .clk_sys                      ( clk_sys ),
