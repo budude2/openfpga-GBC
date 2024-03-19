@@ -313,10 +313,11 @@ wire     [31:0] rtc_date_bcd;
 wire     [31:0] rtc_time_bcd;
 wire            rtc_valid;
 
-wire            savestate_supported;
-wire    [31:0]  savestate_addr;
-wire    [31:0]  savestate_size;
-wire    [31:0]  savestate_maxloadsize;
+wire            savestate_supported   = 1;
+wire    [31:0]  savestate_addr        = 32'h40000000;
+//wire    [31:0]  savestate_size        = 32'h14330; // 32768 + 16384 + 160 + 128 + cart_ram_size + 528
+wire    [31:0]  savestate_addr        = 49968 + save_size_bytes_ext;
+wire    [31:0]  savestate_maxloadsize = savestate_size;
 
 wire            savestate_start;
 wire            savestate_start_ack;
@@ -473,6 +474,7 @@ end
 always_comb begin
   casex(bridge_addr)
     32'h2xxxxxxx: begin bridge_rd_data = save_rd_data;         end
+    32'h4xxxxxxx: begin bridge_rd_data = save_state_bridge_read_data end
     32'hF8xxxxxx: begin bridge_rd_data = cmd_bridge_rd_data;   end
     32'hF1000000: begin bridge_rd_data = int_bridge_read_data; end
     32'hF2000000: begin bridge_rd_data = int_bridge_read_data; end
@@ -609,6 +611,60 @@ save_handler save_handler
   .loaded_save_size     ( loaded_save_size                ),
   .loading_done         ( loading_done                    )
 );
+
+  logic ss_save, ss_load;
+  logic [63:0] SaveStateExt_Din, SaveStateExt_Dout;
+  logic [9:0]  SaveStateExt_Adr;
+  logic        SaveStateExt_wren, SaveStateExt_rst, SaveStateExt_load;
+  
+  logic [19:0] Savestate_CRAMAddr;   
+  logic        Savestate_CRAMRWrEn;
+  logic [7:0]  Savestate_CRAMWriteData, Savestate_CRAMReadData;
+
+  logic [63:0] ss_din, ss_dout;
+  logic [25:0] ss_addr;
+  logic ss_rnw, ss_req, ss_ack;
+  logic [7:0] ss_be;
+
+  save_state_controller save_state_controller (
+    .clk_74a                      ( clk_74a ),
+    .clk_sys                      ( clk_sys ),
+
+    // APF
+    .bridge_wr                    ( bridge_wr ),
+    .bridge_rd                    ( bridge_rd ),
+    .bridge_endian_little         ( bridge_endian_little ),
+    .bridge_addr                  ( bridge_addr ),
+    .bridge_wr_data               ( bridge_wr_data ),
+    .save_state_bridge_read_data  ( save_state_bridge_read_data ),
+
+    // APF Save States
+    .savestate_load               ( savestate_load ),
+    .savestate_load_ack_s         ( savestate_load_ack ),
+    .savestate_load_busy_s        ( savestate_load_busy ),
+    .savestate_load_ok_s          ( savestate_load_ok ),
+    .savestate_load_err_s         ( savestate_load_err ),
+
+    .savestate_start              ( savestate_start ),
+    .savestate_start_ack_s        ( savestate_start_ack ),
+    .savestate_start_busy_s       ( savestate_start_busy ),
+    .savestate_start_ok_s         ( savestate_start_ok ),
+    .savestate_start_err_s        ( savestate_start_err ),
+
+    // Save States Manager
+    .ss_save                      ( ss_save ),
+    .ss_load                      ( ss_load ),
+
+    .ss_din                       ( ss_din ),
+    .ss_dout                      ( ss_dout ),
+    .ss_addr                      ( ss_addr ),
+    .ss_rnw                       ( ss_rnw ),
+    .ss_req                       ( ss_req ),
+    .ss_be                        ( ss_be ),
+    .ss_ack                       ( ss_ack ),
+
+    .ss_busy                      ( sleep_savestate )
+  );
 
 //////// Start GB/GBC Stuff ////////
 
@@ -807,18 +863,18 @@ cart_top cart
   .RTC_savedtimeOut           ( RTC_savedtimeOut  ),
   .RTC_inuse                  ( RTC_inuse ),
 
-  .SaveStateExt_Din           ( 0                 ),
-  .SaveStateExt_Adr           ( 0                 ),
-  .SaveStateExt_wren          ( 0                 ),
-  .SaveStateExt_rst           ( 0                 ),
-  .SaveStateExt_Dout          (                   ),
-  .savestate_load             ( 0                 ),
+  .SaveStateExt_Din           ( SaveStateExt_Din  ),
+  .SaveStateExt_Adr           ( SaveStateExt_Adr  ),
+  .SaveStateExt_wren          ( SaveStateExt_wren ),
+  .SaveStateExt_rst           ( SaveStateExt_rst  ),
+  .SaveStateExt_Dout          ( SaveStateExt_Dout ),
+  .savestate_load             ( SaveStateExt_load ),
   .sleep_savestate            ( sleep_savestate   ),
 
-  .Savestate_CRAMAddr         ( 0                 ),
-  .Savestate_CRAMRWrEn        ( 0                 ),
-  .Savestate_CRAMWriteData    ( 0                 ),
-  .Savestate_CRAMReadData     (                   ),
+  .Savestate_CRAMAddr         ( Savestate_CRAMAddr),
+  .Savestate_CRAMRWrEn        ( Savestate_CRAMRWrEn),
+  .Savestate_CRAMWriteData    ( Savestate_CRAMWriteData),
+  .Savestate_CRAMReadData     ( Savestate_CRAMReadData),
   
   .rumbling                   ( rumbling          ),
 
@@ -937,32 +993,32 @@ gb gb
   .gg_available           (                       ),
   
   // savestates
-  .increaseSSHeaderCount  ( 0                     ),
-  .cart_ram_size          ( 0                     ),
-  .save_state             ( 0                     ),
-  .load_state             ( 0                     ),
-  .savestate_number       ( 0                     ),
-  .sleep_savestate        ( sleep_savestate       ),
+  .increaseSSHeaderCount  ( 0                 ),
+  .cart_ram_size          ( cart_ram_size     ),
+  .save_state             ( ss_save           ),
+  .load_state             ( ss_load           ),
+  .savestate_number       ( 0                 ),
+  .sleep_savestate        ( sleep_savestate   ),
 
-  .SaveStateExt_Din       (                       ),
-  .SaveStateExt_Adr       (                       ),
-  .SaveStateExt_wren      (                       ),
-  .SaveStateExt_rst       (                       ),
-  .SaveStateExt_Dout      ( 0                     ),
-  .SaveStateExt_load      (                       ),
+  .SaveStateExt_Din       ( SaveStateExt_Din  ),
+  .SaveStateExt_Adr       ( SaveStateExt_Adr  ),
+  .SaveStateExt_wren      ( SaveStateExt_wren ),
+  .SaveStateExt_rst       ( SaveStateExt_rst  ),
+  .SaveStateExt_Dout      ( SaveStateExt_Dout ),
+  .SaveStateExt_load      ( SaveStateExt_load ),
   
-  .Savestate_CRAMAddr     (                       ),
-  .Savestate_CRAMRWrEn    (                       ),
-  .Savestate_CRAMWriteData(                       ),
-  .Savestate_CRAMReadData ( 0                     ),
+  .Savestate_CRAMAddr     ( Savestate_CRAMAddr),
+  .Savestate_CRAMRWrEn    ( Savestate_CRAMRWrEn),
+  .Savestate_CRAMWriteData( Savestate_CRAMWriteData),
+  .Savestate_CRAMReadData ( Savestate_CRAMReadData),
   
-  .SAVE_out_Din           (                       ),  // data read from savestate
-  .SAVE_out_Dout          ( 0                     ),  // data written to savestate
-  .SAVE_out_Adr           (                       ),  // all addresses are DWORD addresses!
-  .SAVE_out_rnw           (                       ),  // read = 1, write = 0
-  .SAVE_out_ena           (                       ),  // one cycle high for each action
-  .SAVE_out_be            (                       ),            
-  .SAVE_out_done          ( 0                     ),  // should be one cycle high when write is done or read value is valid
+  .SAVE_out_Din           ( ss_din            ),            // data read from savestate
+  .SAVE_out_Dout          ( ss_dout           ),           // data written to savestate
+  .SAVE_out_Adr           ( ss_addr           ),           // all addresses are DWORD addresses!
+  .SAVE_out_rnw           ( ss_rnw            ),            // read = 1, write = 0
+  .SAVE_out_ena           ( ss_req            ),            // one cycle high for each action
+  .SAVE_out_be            ( ss_be             ),            
+  .SAVE_out_done          ( ss_ack            ),            // should be one cycle high when write is done or read value is valid
   
   .rewind_on              ( 0                     ),
   .rewind_active          ( 0                     )
