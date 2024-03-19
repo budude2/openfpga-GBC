@@ -383,7 +383,7 @@ end
     wire            savestate_supported   = 1;
     wire    [31:0]  savestate_addr        = 32'h40000000;
     //wire    [31:0]  savestate_size        = 32'h14330; // 32768 + 16384 + 160 + 128 + cart_ram_size + 528
-    wire    [31:0]  savestate_addr        = 49968 + save_size_bytes_ext;
+    wire    [31:0]  savestate_size        = 49968 + save_size_bytes_ext;
     wire    [31:0]  savestate_maxloadsize = savestate_size;
 
     wire            savestate_start;
@@ -618,6 +618,7 @@ data_loader #(
   logic [31:0] save_rd_data;
   logic [31:0] loaded_save_size;
   logic loading_done;
+  logic [17:0]  save_size_bytes_ext;
 
   save_handler save_handler (
     .clk_74a              (clk_74a),
@@ -669,6 +670,8 @@ data_loader #(
   logic [25:0] ss_addr;
   logic ss_rnw, ss_req, ss_ack;
   logic [7:0] ss_be;
+
+  logic [31:0] save_state_bridge_read_data;
 
   save_state_controller save_state_controller (
     .clk_74a                      ( clk_74a ),
