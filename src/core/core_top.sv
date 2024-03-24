@@ -2,7 +2,6 @@
 
 `define isgbc 0
 `define sgb_en 1
-`define sgb_border_en 1
 
 module core_top (
 
@@ -306,15 +305,14 @@ always @(*) begin
     end
 end
 
-reg [31:0] reset_delay  = 0;
-reg rumble_en           = 0;
-reg ff_en               = 0;
-reg ff_snd_en           = 0;
-reg [1:0] tint          = 0;
-reg originalcolors;
-
-reg sgc_gbc_en          = 0;
-reg rw_en               = 0;
+logic [31:0] reset_delay  = 0;
+logic rumble_en           = 0;
+logic ff_en               = 0;
+logic ff_snd_en           = 0;
+logic [1:0] tint          = 0;
+logic originalcolors;
+logic sgc_gbc_en          = 0;
+logic sgb_border_en;
 
 always @(posedge clk_74a) begin
     if (reset_delay > 0) begin
@@ -340,6 +338,9 @@ always @(posedge clk_74a) begin
         end
         32'h214: begin
           tint <= bridge_wr_data[1:0];
+        end
+        32'h218: begin
+          sgb_border_en <= bridge_wr_data[0];
         end
       endcase
     end
@@ -868,7 +869,6 @@ wire speed;
 logic megaduck      = 0;
 logic isGBC         = `isgbc;
 logic sgb_en        = `sgb_en;
-logic sgb_border_en = `sgb_border_en;
 
 wire [15:0] GB_AUDIO_L;
 wire [15:0] GB_AUDIO_R;
@@ -1022,7 +1022,7 @@ lcd lcd
     .mode           ( sgb_lcd_mode   ),  // used to detect begin of new lines and frames
     .on             ( sgb_lcd_on     ),
     .lcd_vs         ( sgb_lcd_vsync  ),
-    .shadow         ( 0     ),
+    .shadow         ( 0    ),
 
     .isGBC          ( isGBC      ),
 
@@ -1167,9 +1167,28 @@ sgb sgb (
   assign video_hs           = video_hs_reg;
   assign video_vs           = video_vs_reg;
 
-  wire [7:0] lum;
+  logic [7:0] lum;
   assign lum = (video_rgb_reg[23:16]>>2) + (video_rgb_reg[23:16]>>5) + (video_rgb_reg[15:8]>>1) + (video_rgb_reg[15:8]>>4) + (video_rgb_reg[7:0]>>4) + (video_rgb_reg[7:0]>>5);
-  assign video_rgb = bw_en ? {lum, lum, lum} : video_rgb_reg;
+
+  always_comb begin
+      if(~video_de_reg) begin
+          if(sgb_border_en) begin
+              video_rgb[23:13] = 0;
+              video_rgb[12:3]  = 0;
+              video_rgb[2:0]   = 0;
+          end else begin
+              video_rgb[23:13] = 1;
+              video_rgb[12:3]  = 0;
+              video_rgb[2:0]   = 0;
+          end
+      end else begin
+        if (bw_en) begin
+            video_rgb = {lum, lum, lum};
+        end else begin
+            video_rgb = video_rgb_reg;
+        end
+      end
+  end
 
 //////////////////////////////// CE ////////////////////////////////////
 
