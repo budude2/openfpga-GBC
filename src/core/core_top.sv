@@ -1,6 +1,8 @@
 `default_nettype none
 
-`define isgbc 1
+`define isgbc 0
+`define sgb_en 1
+`define sgb_border_en 1
 
 module core_top (
 
@@ -311,7 +313,6 @@ reg ff_snd_en           = 0;
 reg [1:0] tint          = 0;
 reg originalcolors;
 
-reg [1:0] sgb_en        = 0;
 reg sgc_gbc_en          = 0;
 reg rw_en               = 0;
 
@@ -888,7 +889,7 @@ gb gb
     
     .isGBC                  ( isGBC             ),
     .real_cgb_boot          ( 1                 ),  
-    .isSGB                  ( |sgb_en & ~isGBC  ),
+    .isSGB                  ( sgb_en & ~isGBC  ),
     .megaduck               ( megaduck          ),
 
     .joy_p54                ( joy_p54           ),
@@ -1060,7 +1061,6 @@ wire [15:0] sgb_border_pix;
 wire sgb_lcd_clkena, sgb_lcd_on, sgb_lcd_vsync, sgb_lcd_freeze;
 wire [1:0] sgb_lcd_mode;
 wire sgb_pal_en;
-wire sgb_border_en = sgb_en[1];
 
 sgb sgb (
     .reset              ( reset | ~loading_done ),
@@ -1077,7 +1077,7 @@ sgb sgb (
     .joy_p54            ( joy_p54    ),
     .joy_do             ( joy_do_sgb ),
 
-    .sgb_en             ( |sgb_en & isSGB_game & (~isGBC | sgc_gbc_en) ),
+    .sgb_en             ( sgb_en & isSGB_game & (~isGBC | sgc_gbc_en) ),
     .tint               ( tint[1]     ),
     .isGBC_game         ( isGBC & isGBC_game ),
 
