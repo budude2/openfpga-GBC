@@ -7,7 +7,7 @@
         "id": 1,
         "required": true,
         "parameters": "0x109",
-        "extensions": ["gb"],
+        "extensions": ["gb", "gbc"],
         "address": "0x10000000"
       },
       {
@@ -22,7 +22,7 @@
       },
       {
         "name": "SGB BIOS",
-        "filename": "sgb_bios.bin",
+        "filename": "sgb_boot.bin",
         "id": 6,
         "required": true,
         "parameters": 136,
