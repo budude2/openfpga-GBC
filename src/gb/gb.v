@@ -937,7 +937,7 @@ wire [10:0] boot_wr_addr =
 
 wire [7:0] boot_q;
 
-dpram_dif #(12,8,11,16,"BootROMs/cgb_boot.mif") boot_rom (
+dpram_dif #(12,8,11,16,"") boot_rom (
 	.clock (clk_sys),
 
 	.address_a (boot_addr),

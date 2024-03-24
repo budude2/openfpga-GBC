@@ -1,0 +1,52 @@
+{
+  "interact": {
+    "magic": "APF_VER_1",
+    "variables": [
+      {
+        "name": "Reset core",
+        "id": 10,
+        "type": "action",
+        "enabled": true,
+        "address": "0x50",
+        "value": 1
+      },
+      {
+        "name": "Enable Rumble",
+        "id": 12,
+        "type": "check",
+        "enabled": true,
+        "address": "0x204",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 1,
+        "value": 1,
+        "value_off": 0
+      },
+      {
+        "name": "Enable FF",
+        "id": 14,
+        "type": "check",
+        "enabled": true,
+        "address": "0x20C",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 1,
+        "value": 1,
+        "value_off": 0
+      },
+      {
+        "name": "Enable FF Sound",
+        "id": 15,
+        "type": "check",
+        "enabled": true,
+        "address": "0x210",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 0,
+        "value": 1,
+        "value_off": 0
+      }
+    ],
+    "messages": []
+  }
+}

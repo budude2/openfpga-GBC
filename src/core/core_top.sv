@@ -865,8 +865,10 @@ wire DMA_on;
 wire reset = (~reset_n_s | external_reset_s | cart_download | boot_download);
 wire speed;
 
-reg megaduck = 0;
-reg isGBC    = `isgbc;
+logic megaduck      = 0;
+logic isGBC         = `isgbc;
+logic sgb_en        = `sgb_en;
+logic sgb_border_en = `sgb_border_en;
 
 wire [15:0] GB_AUDIO_L;
 wire [15:0] GB_AUDIO_R;
