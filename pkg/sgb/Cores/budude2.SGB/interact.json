@@ -57,6 +57,30 @@
         "defaultval": 1,
         "value": 1,
         "value_off": 0
+      },
+      {
+        "name": "Custom Palette",
+        "id": 17,
+        "type": "list",
+        "enabled": true,
+        "address": "0x214",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 1,
+        "options": [
+          {
+            "value": "0x0",
+            "name": "Off"
+          },
+          {
+            "value": "0x1",
+            "name": "Auto"
+          },
+          {
+            "value": "0x2",
+            "name": "On"
+          }
+        ]
       }
     ],
     "messages": []

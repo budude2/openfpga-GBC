@@ -555,22 +555,29 @@ synch_3 #(
     clk_sys
 );
 
-wire rumble_en_s, originalcolors_s, ff_snd_en_s, ff_en_s;
+logic rumble_en_s, originalcolors_s, ff_snd_en_s, ff_en_s, sgb_border_en_s, sgc_gbc_en_s;
+logic [1:0] tint_s;
 
 synch_3 #(
-    .WIDTH(4)
+    .WIDTH(5)
 ) settings (
     {
         rumble_en,
         originalcolors,
         ff_snd_en,
-        ff_en
+        ff_en,
+        sgb_border_en,
+        sgc_gbc_en,
+        tint
     },
     {
         rumble_en_s,
         originalcolors_s,
         ff_snd_en_s,
-        ff_en_s
+        ff_en_s,
+        sgb_border_en_s,
+        sgc_gbc_en_s,
+        tint_s
     },
     clk_sys
 );
@@ -1026,7 +1033,7 @@ lcd lcd
 
     .isGBC          ( isGBC      ),
 
-    .tint           ( |tint       ),
+    .tint           ( |tint_s       ),
     .inv            ( 0  ),
     .originalcolors ( originalcolors_s ),
     .analog_wide    ( 0 ),
@@ -1039,7 +1046,7 @@ lcd lcd
 
     .sgb_border_pix ( sgb_border_pix ),
     .sgb_pal_en     ( sgb_pal_en ),
-    .sgb_en         ( sgb_border_en ),
+    .sgb_en         ( sgb_border_en_s ),
     .sgb_freeze     ( sgb_lcd_freeze),
 
     .clk_vid        ( CLK_VIDEO  ),
@@ -1073,14 +1080,14 @@ sgb sgb (
     .ce_pix             ( ce_pix      ),
 
     .joystick_0         ( {cont1_key_s[15], cont1_key_s[14], cont1_key_s[5], cont1_key_s[4], cont1_key_s[0], cont1_key_s[1], cont1_key_s[2], cont1_key_s[3]} ),
-    .joystick_1         ( {cont2_key_s[15], cont2_key_s[14], cont2_key_s[5], cont2_key_s[4], cont2_key_s[0], cont2_key_s[1], cont2_key_s[2], cont2_key_s[3]}  ),
-    .joystick_2         ( {cont3_key_s[15], cont3_key_s[14], cont3_key_s[5], cont3_key_s[4], cont3_key_s[0], cont3_key_s[1], cont3_key_s[2], cont3_key_s[3]}  ),
-    .joystick_3         ( {cont4_key_s[15], cont4_key_s[14], cont4_key_s[5], cont4_key_s[4], cont4_key_s[0], cont4_key_s[1], cont4_key_s[2], cont4_key_s[3]}  ),
+    .joystick_1         ( {cont2_key_s[15], cont2_key_s[14], cont2_key_s[5], cont2_key_s[4], cont2_key_s[0], cont2_key_s[1], cont2_key_s[2], cont2_key_s[3]} ),
+    .joystick_2         ( {cont3_key_s[15], cont3_key_s[14], cont3_key_s[5], cont3_key_s[4], cont3_key_s[0], cont3_key_s[1], cont3_key_s[2], cont3_key_s[3]} ),
+    .joystick_3         ( {cont4_key_s[15], cont4_key_s[14], cont4_key_s[5], cont4_key_s[4], cont4_key_s[0], cont4_key_s[1], cont4_key_s[2], cont4_key_s[3]} ),
     .joy_p54            ( joy_p54    ),
     .joy_do             ( joy_do_sgb ),
 
-    .sgb_en             ( sgb_en & isSGB_game & (~isGBC | sgc_gbc_en) ),
-    .tint               ( tint[1]     ),
+    .sgb_en             ( sgb_en & isSGB_game & (~isGBC | sgc_gbc_en_s) ),
+    .tint               ( tint_s[1]     ),
     .isGBC_game         ( isGBC & isGBC_game ),
 
     .lcd_on             ( lcd_on      ),
@@ -1172,7 +1179,7 @@ sgb sgb (
 
   always_comb begin
       if(~video_de_reg) begin
-          if(sgb_border_en) begin
+          if(sgb_border_en_s) begin
               video_rgb[23:13] = 0;
               video_rgb[12:3]  = 0;
               video_rgb[2:0]   = 0;

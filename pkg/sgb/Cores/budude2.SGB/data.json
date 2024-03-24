@@ -11,6 +11,22 @@
         "address": "0x10000000"
       },
       {
+        "name": "SGB Border",
+        "id": 2,
+        "required": false,
+        "parameters": "0x009",
+        "extensions": ["sgb"],
+        "address": "0x10000000"
+      },
+      {
+        "name": "Palette",
+        "id": 3,
+        "required": false,
+        "parameters": "0x009",
+        "extensions": ["gbp"],
+        "address": "0x10000000"
+      },
+      {
         "name": "Save",
         "id": 18,
         "required": false,
