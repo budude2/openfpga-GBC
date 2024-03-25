@@ -11,35 +11,11 @@
         "value": 1
       },
       {
-        "name": "Enable Rumble",
-        "id": 12,
+        "name": "Enable SGB",
+        "id": 17,
         "type": "check",
         "enabled": true,
-        "address": "0x204",
-        "persist": true,
-        "writeonly": true,
-        "defaultval": 1,
-        "value": 1,
-        "value_off": 0
-      },
-      {
-        "name": "Enable FF",
-        "id": 14,
-        "type": "check",
-        "enabled": true,
-        "address": "0x20C",
-        "persist": true,
-        "writeonly": true,
-        "defaultval": 1,
-        "value": 1,
-        "value_off": 0
-      },
-      {
-        "name": "Enable FF Sound",
-        "id": 15,
-        "type": "check",
-        "enabled": true,
-        "address": "0x210",
+        "address": "0x21C",
         "persist": true,
         "writeonly": true,
         "defaultval": 0,
@@ -47,7 +23,7 @@
         "value_off": 0
       },
       {
-        "name": "Border",
+        "name": "Enable Border",
         "id": 16,
         "type": "check",
         "enabled": true,
@@ -78,16 +54,40 @@
           },
           {
             "value": "0x2",
-            "name": "On"
+            "name": "Force"
           }
         ]
       },
       {
-        "name": "SGB EN",
-        "id": 17,
+        "name": "Enable Rumble",
+        "id": 12,
         "type": "check",
         "enabled": true,
-        "address": "0x21C",
+        "address": "0x204",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 1,
+        "value": 1,
+        "value_off": 0
+      },
+      {
+        "name": "Enable FF",
+        "id": 14,
+        "type": "check",
+        "enabled": true,
+        "address": "0x20C",
+        "persist": true,
+        "writeonly": true,
+        "defaultval": 1,
+        "value": 1,
+        "value_off": 0
+      },
+      {
+        "name": "Enable FF Sound",
+        "id": 15,
+        "type": "check",
+        "enabled": true,
+        "address": "0x210",
         "persist": true,
         "writeonly": true,
         "defaultval": 0,
