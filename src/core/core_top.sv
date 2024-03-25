@@ -1,6 +1,6 @@
 `default_nettype none
 
-`define isgbc 1
+`define isgbc 0
 
 module core_top (
 
@@ -304,16 +304,17 @@ always @(*) begin
     end
 end
 
-reg [31:0] reset_delay  = 0;
-reg rumble_en           = 0;
-reg ff_en               = 0;
-reg ff_snd_en           = 0;
-reg [1:0] tint          = 0;
-reg originalcolors;
+logic [31:0] reset_delay  = 0;
+logic rumble_en           = 0;
+logic ff_en               = 0;
+logic ff_snd_en           = 0;
+logic [1:0] tint          = 0;
+logic originalcolors;
 
-reg [1:0] sgb_en        = 0;
-reg sgc_gbc_en          = 0;
-reg rw_en               = 0;
+logic sgc_gbc_en          = 0;
+logic sgb_border_en;
+logic sgb_en;
+
 
 always @(posedge clk_74a) begin
     if (reset_delay > 0) begin
@@ -339,6 +340,13 @@ always @(posedge clk_74a) begin
         end
         32'h214: begin
           tint <= bridge_wr_data[1:0];
+        end
+        32'h218: begin
+          sgb_border_en <= bridge_wr_data[0];
+        end
+        32'h21C: begin
+          sgb_en <= bridge_wr_data[0];
+          reset_delay <= 32'h100000;
         end
       endcase
     end
@@ -553,22 +561,31 @@ synch_3 #(
     clk_sys
 );
 
-wire rumble_en_s, originalcolors_s, ff_snd_en_s, ff_en_s;
+logic rumble_en_s, originalcolors_s, ff_snd_en_s, ff_en_s, sgb_border_en_s, sgc_gbc_en_s, sgb_en_s;
+logic [1:0] tint_s;
 
 synch_3 #(
-    .WIDTH(4)
+    .WIDTH(6)
 ) settings (
     {
         rumble_en,
         originalcolors,
         ff_snd_en,
-        ff_en
+        ff_en,
+        sgb_border_en,
+        sgc_gbc_en,
+        tint,
+        sgb_en
     },
     {
         rumble_en_s,
         originalcolors_s,
         ff_snd_en_s,
-        ff_en_s
+        ff_en_s,
+        sgb_border_en_s,
+        sgc_gbc_en_s,
+        tint_s,
+        sgb_en_s
     },
     clk_sys
 );
@@ -864,8 +881,8 @@ wire DMA_on;
 wire reset = (~reset_n_s | external_reset_s | cart_download | boot_download);
 wire speed;
 
-reg megaduck = 0;
-reg isGBC    = `isgbc;
+logic megaduck      = 0;
+logic isGBC         = `isgbc;
 
 wire [15:0] GB_AUDIO_L;
 wire [15:0] GB_AUDIO_R;
@@ -888,7 +905,7 @@ gb gb
     
     .isGBC                  ( isGBC             ),
     .real_cgb_boot          ( 1                 ),  
-    .isSGB                  ( |sgb_en & ~isGBC  ),
+    .isSGB                  ( sgb_en_s & ~isGBC  ),
     .megaduck               ( megaduck          ),
 
     .joy_p54                ( joy_p54           ),
@@ -1023,7 +1040,7 @@ lcd lcd
 
     .isGBC          ( isGBC      ),
 
-    .tint           ( |tint       ),
+    .tint           ( |tint_s       ),
     .inv            ( 0  ),
     .originalcolors ( originalcolors_s ),
     .analog_wide    ( 0 ),
@@ -1036,7 +1053,7 @@ lcd lcd
 
     .sgb_border_pix ( sgb_border_pix ),
     .sgb_pal_en     ( sgb_pal_en ),
-    .sgb_en         ( sgb_border_en ),
+    .sgb_en         ( sgb_border_en_s & sgb_en_s ),
     .sgb_freeze     ( sgb_lcd_freeze),
 
     .clk_vid        ( CLK_VIDEO  ),
@@ -1060,7 +1077,6 @@ wire [15:0] sgb_border_pix;
 wire sgb_lcd_clkena, sgb_lcd_on, sgb_lcd_vsync, sgb_lcd_freeze;
 wire [1:0] sgb_lcd_mode;
 wire sgb_pal_en;
-wire sgb_border_en = sgb_en[1];
 
 sgb sgb (
     .reset              ( reset | ~loading_done ),
@@ -1077,8 +1093,8 @@ sgb sgb (
     .joy_p54            ( joy_p54    ),
     .joy_do             ( joy_do_sgb ),
 
-    .sgb_en             ( |sgb_en & isSGB_game & (~isGBC | sgc_gbc_en) ),
-    .tint               ( tint[1]     ),
+    .sgb_en             ( sgb_en_s & isSGB_game & (~isGBC | sgc_gbc_en_s) ),
+    .tint               ( tint_s[1]     ),
     .isGBC_game         ( isGBC & isGBC_game ),
 
     .lcd_on             ( lcd_on      ),
@@ -1165,9 +1181,27 @@ sgb sgb (
   assign video_hs           = video_hs_reg;
   assign video_vs           = video_vs_reg;
 
-  wire [7:0] lum;
+  logic [7:0] lum;
   assign lum = (video_rgb_reg[23:16]>>2) + (video_rgb_reg[23:16]>>5) + (video_rgb_reg[15:8]>>1) + (video_rgb_reg[15:8]>>4) + (video_rgb_reg[7:0]>>4) + (video_rgb_reg[7:0]>>5);
-  assign video_rgb = bw_en ? {lum, lum, lum} : video_rgb_reg;
+  always_comb begin
+      if(~video_de_reg) begin
+          if(sgb_border_en_s & sgb_en_s) begin
+              video_rgb[23:13] = 0;
+              video_rgb[12:3]  = 0;
+              video_rgb[2:0]   = 0;
+          end else begin
+              video_rgb[23:13] = 1;
+              video_rgb[12:3]  = 0;
+              video_rgb[2:0]   = 0;
+          end
+      end else begin
+        if (bw_en) begin
+            video_rgb = {lum, lum, lum};
+        end else begin
+            video_rgb = video_rgb_reg;
+        end
+      end
+  end
 
 //////////////////////////////// CE ////////////////////////////////////
 
