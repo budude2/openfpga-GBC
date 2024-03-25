@@ -314,6 +314,7 @@ logic originalcolors;
 logic sgc_gbc_en          = 0;
 logic sgb_border_en;
 logic sgb_en;
+logic gba_en;
 
 
 always @(posedge clk_74a) begin
@@ -346,6 +347,10 @@ always @(posedge clk_74a) begin
         end
         32'h21C: begin
           sgb_en <= bridge_wr_data[0];
+          reset_delay <= 32'h100000;
+        end
+        32'h220: begin
+          gba_en <= bridge_wr_data[0];
           reset_delay <= 32'h100000;
         end
       endcase
@@ -529,43 +534,16 @@ synch_3 s03(external_reset, external_reset_s, clk_sys);
 
 wire [31:0] cont1_key_s, cont2_key_s, cont3_key_s, cont4_key_s;
 
-synch_3 #(
-    .WIDTH(32)
-) s04 (
-    cont1_key,
-    cont1_key_s,
-    clk_sys
-);
+synch_3 #(.WIDTH(32)) s04 (cont1_key, cont1_key_s, clk_sys);
+synch_3 #(.WIDTH(32)) s05 (cont2_key, cont2_key_s, clk_sys);
+synch_3 #(.WIDTH(32)) s06 (cont3_key, cont3_key_s, clk_sys);
+synch_3 #(.WIDTH(32)) s07 (cont4_key, cont4_key_s, clk_sys);
 
-synch_3 #(
-    .WIDTH(32)
-) s05 (
-    cont2_key,
-    cont2_key_s,
-    clk_sys
-);
-
-synch_3 #(
-    .WIDTH(32)
-) s06 (
-    cont3_key,
-    cont3_key_s,
-    clk_sys
-);
-
-synch_3 #(
-    .WIDTH(32)
-) s07 (
-    cont4_key,
-    cont4_key_s,
-    clk_sys
-);
-
-logic rumble_en_s, originalcolors_s, ff_snd_en_s, ff_en_s, sgb_border_en_s, sgc_gbc_en_s, sgb_en_s;
+logic rumble_en_s, originalcolors_s, ff_snd_en_s, ff_en_s, sgb_border_en_s, sgc_gbc_en_s, sgb_en_s, gba_en_s;
 logic [1:0] tint_s;
 
 synch_3 #(
-    .WIDTH(6)
+    .WIDTH(32)
 ) settings (
     {
         rumble_en,
@@ -575,7 +553,8 @@ synch_3 #(
         sgb_border_en,
         sgc_gbc_en,
         tint,
-        sgb_en
+        sgb_en,
+        gba_en
     },
     {
         rumble_en_s,
@@ -585,7 +564,8 @@ synch_3 #(
         sgb_border_en_s,
         sgc_gbc_en_s,
         tint_s,
-        sgb_en_s
+        sgb_en_s,
+        gba_en_s
     },
     clk_sys
 );
@@ -922,7 +902,7 @@ gb gb
 
     .nCS                    ( nCS               ),
 
-    .boot_gba_en            ( 0                 ),
+    .boot_gba_en            ( gba_en_s          ),
     .fast_boot_en           ( 0                 ),
 
     .cgb_boot_download      ( cgb_boot_download ),
@@ -1093,7 +1073,7 @@ sgb sgb (
     .joy_p54            ( joy_p54    ),
     .joy_do             ( joy_do_sgb ),
 
-    .sgb_en             ( sgb_en_s & isSGB_game & (~isGBC | sgc_gbc_en_s) ),
+    .sgb_en             ( sgb_en_s & isSGB_game & ~isGBC),
     .tint               ( tint_s[1]     ),
     .isGBC_game         ( isGBC & isGBC_game ),
 
@@ -1183,25 +1163,38 @@ sgb sgb (
 
   logic [7:0] lum;
   assign lum = (video_rgb_reg[23:16]>>2) + (video_rgb_reg[23:16]>>5) + (video_rgb_reg[15:8]>>1) + (video_rgb_reg[15:8]>>4) + (video_rgb_reg[7:0]>>4) + (video_rgb_reg[7:0]>>5);
-  always_comb begin
-      if(~video_de_reg) begin
-          if(sgb_border_en_s & sgb_en_s) begin
-              video_rgb[23:13] = 0;
-              video_rgb[12:3]  = 0;
-              video_rgb[2:0]   = 0;
-          end else begin
-              video_rgb[23:13] = 1;
-              video_rgb[12:3]  = 0;
-              video_rgb[2:0]   = 0;
-          end
-      end else begin
+
+  generate
+    if(`isgbc) begin
+      always_comb begin
         if (bw_en) begin
             video_rgb = {lum, lum, lum};
         end else begin
             video_rgb = video_rgb_reg;
         end
       end
-  end
+    end else begin
+      always_comb begin
+          if(~video_de_reg) begin
+              if(sgb_border_en_s & sgb_en_s) begin
+                  video_rgb[23:13] = 0;
+                  video_rgb[12:3]  = 0;
+                  video_rgb[2:0]   = 0;
+              end else begin
+                  video_rgb[23:13] = 1;
+                  video_rgb[12:3]  = 0;
+                  video_rgb[2:0]   = 0;
+              end
+          end else begin
+            if (bw_en) begin
+                video_rgb = {lum, lum, lum};
+            end else begin
+                video_rgb = video_rgb_reg;
+            end
+          end
+      end
+    end
+  endgenerate
 
 //////////////////////////////// CE ////////////////////////////////////
 
