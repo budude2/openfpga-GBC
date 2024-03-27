@@ -454,7 +454,7 @@ core_bridge_cmd icb (
   //! ------------------------------------------------------------------------
   reg  [31:0] reset_counter;
   reg         reset_timer;
-  reg         core_reset   = 1;
+  reg         core_reset   = 0;
 
   always_ff @(posedge clk_74a) begin
     if(reset_timer) begin
@@ -527,10 +527,12 @@ synch_3 #(.WIDTH(32)) s07 (cont4_key,       cont4_key_s,        clk_sys);
 synch_3 #(.WIDTH(32)) s08 (boot_settings,   boot_settings_s,    clk_sys);
 synch_3 #(.WIDTH(32)) s09 (run_settings,    run_settings_s,     clk_sys);
 
-logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en;
+logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en, gba_en;
 logic [1:0] tint;
 
 assign sgb_en         = boot_settings_s[0];
+assign gba_en         = boot_settings_s[1];
+
 assign rumble_en      = run_settings_s[0];
 assign originalcolors = run_settings_s[1];
 assign ff_snd_en      = run_settings_s[2];
@@ -565,7 +567,7 @@ data_loader #(
   .bridge_wr_data(bridge_wr_data),
 
   .write_en  (ioctl_wr),
-  .write_addr(ioctl_addr),  // Unused
+  .write_addr(ioctl_addr),
   .write_data(ioctl_dout)
 );
 
@@ -580,7 +582,7 @@ data_loader #(
     .clk_74a              (clk_74a),
     .clk_sys              (clk_sys),
     .reset                (reset),
-    .external_reset_s     (external_reset_s),
+    .external_reset_s     (external_reset_s & loading_done),
     .pll_core_locked      (pll_core_locked),
 
     .bridge_rd            (bridge_rd),
@@ -823,7 +825,7 @@ wire lcd_vsync;
 
 wire DMA_on;
 
-wire reset = (~reset_n_s | external_reset_s | cart_download | boot_download);
+wire reset = (~reset_n_s | (external_reset_s & loading_done) | cart_download | boot_download);
 wire speed;
 
 wire [15:0] GB_AUDIO_L;
@@ -864,7 +866,7 @@ gb gb
 
     .nCS                    ( nCS               ),
 
-    .boot_gba_en            ( 0          ),
+    .boot_gba_en            ( gba_en          ),
     .fast_boot_en           ( 0                 ),
 
     .cgb_boot_download      ( cgb_boot_download ),
