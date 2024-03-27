@@ -284,79 +284,6 @@ assign user1       = 1'bZ;
 assign aux_scl     = 1'bZ;
 assign vpll_feed   = 1'bZ;
 
-
-// for bridge write data, we just broadcast it to all bus devices
-// for bridge read data, we have to mux it
-// add your own devices here
-always @(*) begin
-    casex(bridge_addr)
-        default: begin
-            bridge_rd_data <= 0;
-        end
-
-        32'hF8xxxxxx: begin
-            bridge_rd_data <= cmd_bridge_rd_data;
-        end
-    endcase
-
-    if (bridge_addr[31:28] == 4'h2) begin
-        bridge_rd_data <= save_rd_data;
-    end
-end
-
-logic [31:0] reset_delay  = 0;
-logic rumble_en           = 0;
-logic ff_en               = 0;
-logic ff_snd_en           = 0;
-logic [1:0] tint          = 0;
-logic originalcolors;
-
-logic sgc_gbc_en          = 0;
-logic sgb_border_en;
-logic sgb_en;
-logic gba_en;
-
-
-always @(posedge clk_74a) begin
-    if (reset_delay > 0) begin
-      reset_delay <= reset_delay - 1;
-    end
-
-    if (bridge_wr) begin
-      casex (bridge_addr)
-        32'h050: begin
-          reset_delay <= 32'h100000;
-        end
-        32'h204: begin
-          rumble_en <= bridge_wr_data[0];
-        end
-        32'h208: begin
-          originalcolors <= bridge_wr_data[0];
-        end
-        32'h20C: begin
-          ff_en <= bridge_wr_data[0];
-        end
-        32'h210: begin
-          ff_snd_en <= bridge_wr_data[0];
-        end
-        32'h214: begin
-          tint <= bridge_wr_data[1:0];
-        end
-        32'h218: begin
-          sgb_border_en <= bridge_wr_data[0];
-        end
-        32'h21C: begin
-          sgb_en <= bridge_wr_data[0];
-          reset_delay <= 32'h100000;
-        end
-        32'h220: begin
-          gba_en <= bridge_wr_data[0];
-          reset_delay <= 32'h100000;
-        end
-      endcase
-    end
-end
-
 //
 // host/target command handler
 //
@@ -365,20 +292,20 @@ end
     
 // bridge host commands
 // synchronous to clk_74a
-    wire            status_boot_done = pll_core_locked_s; 
+    wire            status_boot_done  = pll_core_locked_s; 
     wire            status_setup_done = pll_core_locked_s; // rising edge triggers a target command
-    wire            status_running = reset_n; // we are running as soon as reset_n goes high
+    wire            status_running    = reset_n; // we are running as soon as reset_n goes high
 
     wire            dataslot_requestread;
     wire    [15:0]  dataslot_requestread_id;
     wire            dataslot_requestread_ack = 1;
-    wire            dataslot_requestread_ok = 1;
+    wire            dataslot_requestread_ok  = 1;
 
     wire            dataslot_requestwrite;
     wire    [15:0]  dataslot_requestwrite_id;
     wire    [31:0]  dataslot_requestwrite_size;
     wire            dataslot_requestwrite_ack = 1;
-    wire            dataslot_requestwrite_ok = 1;
+    wire            dataslot_requestwrite_ok  = 1;
 
     wire            dataslot_update;
     wire    [15:0]  dataslot_update_id;
@@ -522,53 +449,94 @@ core_bridge_cmd icb (
 
 );
 
+  //! ------------------------------------------------------------------------
+  //! Reset Handler (Thanks boogerman!)
+  //! ------------------------------------------------------------------------
+  reg  [31:0] reset_counter;
+  reg         reset_timer;
+  reg         core_reset   = 1;
+
+  always_ff @(posedge clk_74a) begin
+    if(reset_timer) begin
+      reset_counter <= 32'd8000;
+      core_reset    <= 0;
+    end
+    else begin
+      if (reset_counter == 32'h0) begin
+        core_reset <= 0;
+      end
+      else begin
+        reset_counter <= reset_counter - 1;
+        core_reset <= 1;
+      end
+    end
+  end
+
+// for bridge write data, we just broadcast it to all bus devices
+// for bridge read data, we have to mux it
+// add your own devices here
+always_comb begin
+    casex(bridge_addr)
+        32'h2xxxxxxx: begin bridge_rd_data <= save_rd_data;         end
+        32'hF8xxxxxx: begin bridge_rd_data <= cmd_bridge_rd_data;   end
+        32'hF1000000: begin bridge_rd_data <= int_bridge_read_data; end
+        32'hF2000000: begin bridge_rd_data <= int_bridge_read_data; end
+        default:      begin bridge_rd_data <= 0;                    end
+    endcase
+end
+
+reg [31:0] boot_settings = 32'h0;
+reg [31:0] run_settings  = 32'h0;
+wire [31:0] int_bridge_read_data;
+
+always_ff @(posedge clk_74a) begin
+  reset_timer <= 0; //! Always default this to zero
+
+  if(bridge_wr) begin
+    case (bridge_addr)
+      32'hF0000000: begin /*         RESET ONLY          */       reset_timer <= 1; end //! Reset Core Command
+      32'hF1000000: begin boot_settings  <= bridge_wr_data;       reset_timer <= 1; end //! System Settings
+      32'hF2000000: begin run_settings   <= bridge_wr_data;                         end //! Runtime settings
+    endcase
+  end
+
+  if(bridge_rd) begin
+    case (bridge_addr)
+      32'hF1000000: begin int_bridge_read_data  <= boot_settings;  end //! System Settings
+      32'hF2000000: begin int_bridge_read_data  <= run_settings;   end //! Runtime settings
+    endcase
+  end
+end
+
 wire clk_sys, clk_ram, clk_ram_90, clk_vid, clk_vid_90;
 
-wire    pll_core_locked;
-wire    pll_core_locked_s;
-wire    reset_n_s;
-
-synch_3 s01(pll_core_locked, pll_core_locked_s, clk_ram);
-synch_3 s02(reset_n, reset_n_s, clk_sys);
-synch_3 s03(external_reset, external_reset_s, clk_sys);
-
+wire pll_core_locked;
+wire pll_core_locked_s;
+wire reset_n_s;
+wire external_reset_s;
 wire [31:0] cont1_key_s, cont2_key_s, cont3_key_s, cont4_key_s;
+wire [31:0] boot_settings_s, run_settings_s;
 
-synch_3 #(.WIDTH(32)) s04 (cont1_key, cont1_key_s, clk_sys);
-synch_3 #(.WIDTH(32)) s05 (cont2_key, cont2_key_s, clk_sys);
-synch_3 #(.WIDTH(32)) s06 (cont3_key, cont3_key_s, clk_sys);
-synch_3 #(.WIDTH(32)) s07 (cont4_key, cont4_key_s, clk_sys);
+synch_3               s01 (pll_core_locked, pll_core_locked_s,  clk_ram);
+synch_3               s02 (reset_n,         reset_n_s,          clk_sys);
+synch_3               s03 (core_reset,      external_reset_s,   clk_sys);
+synch_3 #(.WIDTH(32)) s04 (cont1_key,       cont1_key_s,        clk_sys);
+synch_3 #(.WIDTH(32)) s05 (cont2_key,       cont2_key_s,        clk_sys);
+synch_3 #(.WIDTH(32)) s06 (cont3_key,       cont3_key_s,        clk_sys);
+synch_3 #(.WIDTH(32)) s07 (cont4_key,       cont4_key_s,        clk_sys);
+synch_3 #(.WIDTH(32)) s08 (boot_settings,   boot_settings_s,    clk_sys);
+synch_3 #(.WIDTH(32)) s09 (run_settings,    run_settings_s,     clk_sys);
 
-logic rumble_en_s, originalcolors_s, ff_snd_en_s, ff_en_s, sgb_border_en_s, sgc_gbc_en_s, sgb_en_s, gba_en_s;
-logic [1:0] tint_s;
+logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en;
+logic [1:0] tint;
 
-synch_3 #(
-    .WIDTH(32)
-) settings (
-    {
-        rumble_en,
-        originalcolors,
-        ff_snd_en,
-        ff_en,
-        sgb_border_en,
-        sgc_gbc_en,
-        tint,
-        sgb_en,
-        gba_en
-    },
-    {
-        rumble_en_s,
-        originalcolors_s,
-        ff_snd_en_s,
-        ff_en_s,
-        sgb_border_en_s,
-        sgc_gbc_en_s,
-        tint_s,
-        sgb_en_s,
-        gba_en_s
-    },
-    clk_sys
-);
+assign sgb_en         = boot_settings_s[0];
+assign rumble_en      = run_settings_s[0];
+assign originalcolors = run_settings_s[1];
+assign ff_snd_en      = run_settings_s[2];
+assign ff_en          = run_settings_s[3];
+assign sgb_border_en  = run_settings_s[4];
+assign tint           = run_settings_s[6:5];
 
 mf_pllbase mp1
 (
@@ -583,10 +551,7 @@ mf_pllbase mp1
     .locked   ( pll_core_locked )
 );
 
-wire CLK_VIDEO    = clk_ram;
-
-wire external_reset = reset_delay > 0;
-wire external_reset_s;
+wire CLK_VIDEO = clk_ram;
 
 data_loader #(
   .ADDRESS_MASK_UPPER_4(4'h1),
@@ -737,7 +702,7 @@ rumbler rumbler_module
 (
     .clk(clk_sys),
     .reset(reset),
-    .rumble_en(rumble_en_s),
+    .rumble_en(rumble_en),
     .rumbling(rumbling),
     .cart_wr(cart_tran_bank0[6]),
     .cart_rumble(cart_tran_bank3[1])
@@ -861,8 +826,8 @@ wire DMA_on;
 wire reset = (~reset_n_s | external_reset_s | cart_download | boot_download);
 wire speed;
 
-logic megaduck      = 0;
-logic isGBC         = `isgbc;
+reg megaduck      = 0;
+reg isGBC         = `isgbc;
 
 wire [15:0] GB_AUDIO_L;
 wire [15:0] GB_AUDIO_R;
@@ -885,7 +850,7 @@ gb gb
     
     .isGBC                  ( isGBC             ),
     .real_cgb_boot          ( 1                 ),  
-    .isSGB                  ( sgb_en_s & ~isGBC  ),
+    .isSGB                  ( sgb_en & ~isGBC  ),
     .megaduck               ( megaduck          ),
 
     .joy_p54                ( joy_p54           ),
@@ -902,7 +867,7 @@ gb gb
 
     .nCS                    ( nCS               ),
 
-    .boot_gba_en            ( gba_en_s          ),
+    .boot_gba_en            ( 0          ),
     .fast_boot_en           ( 0                 ),
 
     .cgb_boot_download      ( cgb_boot_download ),
@@ -978,8 +943,8 @@ gb gb
 
 wire [15:0] audio_l, audio_r;
 
-assign audio_l = (fast_forward && ~ff_snd_en_s) ? 16'd0 : GB_AUDIO_L;
-assign audio_r = (fast_forward && ~ff_snd_en_s) ? 16'd0 : GB_AUDIO_R;
+assign audio_l = (fast_forward && ~ff_snd_en) ? 16'd0 : GB_AUDIO_L;
+assign audio_r = (fast_forward && ~ff_snd_en) ? 16'd0 : GB_AUDIO_R;
 
 audio_mixer #(
   .DW(16),
@@ -1020,9 +985,9 @@ lcd lcd
 
     .isGBC          ( isGBC      ),
 
-    .tint           ( |tint_s       ),
+    .tint           ( |tint       ),
     .inv            ( 0  ),
-    .originalcolors ( originalcolors_s ),
+    .originalcolors ( originalcolors ),
     .analog_wide    ( 0 ),
 
     // Palettes
@@ -1033,7 +998,7 @@ lcd lcd
 
     .sgb_border_pix ( sgb_border_pix ),
     .sgb_pal_en     ( sgb_pal_en ),
-    .sgb_en         ( sgb_border_en_s & sgb_en_s ),
+    .sgb_en         ( sgb_border_en & sgb_en ),
     .sgb_freeze     ( sgb_lcd_freeze),
 
     .clk_vid        ( CLK_VIDEO  ),
@@ -1073,8 +1038,8 @@ sgb sgb (
     .joy_p54            ( joy_p54    ),
     .joy_do             ( joy_do_sgb ),
 
-    .sgb_en             ( sgb_en_s & isSGB_game & ~isGBC),
-    .tint               ( tint_s[1]     ),
+    .sgb_en             ( sgb_en & isSGB_game & ~isGBC),
+    .tint               ( tint[1]     ),
     .isGBC_game         ( isGBC & isGBC_game ),
 
     .lcd_on             ( lcd_on      ),
@@ -1161,47 +1126,35 @@ sgb sgb (
   assign video_hs           = video_hs_reg;
   assign video_vs           = video_vs_reg;
 
-  logic [7:0] lum;
+  wire [7:0] lum;
   assign lum = (video_rgb_reg[23:16]>>2) + (video_rgb_reg[23:16]>>5) + (video_rgb_reg[15:8]>>1) + (video_rgb_reg[15:8]>>4) + (video_rgb_reg[7:0]>>4) + (video_rgb_reg[7:0]>>5);
 
-  generate
-    if(`isgbc) begin
-      always_comb begin
-        if (bw_en) begin
-            video_rgb = {lum, lum, lum};
+  always_comb begin
+    if(~video_de_reg) begin
+        if(sgb_border_en & sgb_en) begin
+            video_rgb[23:13] = 1;
+            video_rgb[12:3]  = 0;
+            video_rgb[2:0]   = 0;
         end else begin
-            video_rgb = video_rgb_reg;
+            video_rgb[23:13] = 0;
+            video_rgb[12:3]  = 0;
+            video_rgb[2:0]   = 0;
         end
-      end
     end else begin
-      always_comb begin
-          if(~video_de_reg) begin
-              if(sgb_border_en_s & sgb_en_s) begin
-                  video_rgb[23:13] = 0;
-                  video_rgb[12:3]  = 0;
-                  video_rgb[2:0]   = 0;
-              end else begin
-                  video_rgb[23:13] = 1;
-                  video_rgb[12:3]  = 0;
-                  video_rgb[2:0]   = 0;
-              end
-          end else begin
-            if (bw_en) begin
-                video_rgb = {lum, lum, lum};
-            end else begin
-                video_rgb = video_rgb_reg;
-            end
-          end
+      if (bw_en) begin
+          video_rgb = {lum, lum, lum};
+      end else begin
+          video_rgb = video_rgb_reg;
       end
     end
-  endgenerate
+  end
 
 //////////////////////////////// CE ////////////////////////////////////
 
 wire ce_cpu, ce_cpu2x;
 wire cart_act = cart_wr | cart_rd;
 
-wire fastforward = ff_en_s && cont1_key_s[9] && !ioctl_download;
+wire fastforward = ff_en && cont1_key_s[9] && !ioctl_download;
 wire ff_on;
 
 wire sleep_savestate;
