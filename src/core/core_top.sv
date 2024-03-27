@@ -1202,7 +1202,7 @@ always @(posedge clk_sys) begin : ffwd
     if ((last_ffw & ~fastforward)) begin // 32mhz clock, 0.2 seconds
         ff_was_held <= 0;
 
-        if (ff_count < 3200000 && ~ff_was_held) begin
+        if (ff_count < 4800000 && ~ff_was_held) begin
             ff_was_held <= 1;
             ff_latch <= 1;
         end
