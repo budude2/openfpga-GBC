@@ -18,9 +18,10 @@ ROMs should be placed in `/Assets/gbc/common`, and `/Assets/gb/common`
 * Real-Time Clock
 * Fastforward
 * Original Gameboy display modes
+* Super Gameboy Emulation
+* Custom Borders
+* Custom Palette Loading
+* Enhance GBA features
 
 ### In Progress
-* Super Gameboy Support
-* Custom Borders
-* SaveStates
-* Custom Palette Loading
+* Save States
