@@ -551,8 +551,6 @@ mf_pllbase mp1
     .locked   ( pll_core_locked )
 );
 
-wire CLK_VIDEO = clk_ram;
-
 data_loader #(
   .ADDRESS_MASK_UPPER_4(4'h1),
   .OUTPUT_WORD_SIZE(2),
@@ -619,8 +617,8 @@ data_loader #(
 reg ioctl_download = 0;
 
 always @(posedge clk_74a) begin
-    if (dataslot_requestwrite) ioctl_download <= 1;
-    else if (dataslot_allcomplete) ioctl_download <= 0;
+    if      (dataslot_requestwrite) ioctl_download <= 1;
+    else if (dataslot_allcomplete)  ioctl_download <= 0;
 end
 
 wire [14:0] cart_addr;
@@ -646,6 +644,8 @@ wire dmg_boot_download   = ioctl_download && (dataslot_requestwrite_id == 5);
 wire sgb_boot_download   = ioctl_download && (dataslot_requestwrite_id == 6);
 wire boot_download       = cgb_boot_download | dmg_boot_download | sgb_boot_download;
 
+reg megaduck  = 0;
+reg isGBC     = `isgbc;
 
 wire  [1:0] sdram_ds     =  cart_download ? 2'b11 : {mbc_addr[0], ~mbc_addr[0]};
 wire [15:0] sdram_do;
@@ -711,8 +711,8 @@ rumbler rumbler_module
 reg ce_32k; // 32768Hz clock for RTC
 reg [9:0] ce_32k_div;
 always @(posedge clk_sys) begin
-    ce_32k_div <= ce_32k_div + 1'b1;
-    ce_32k <= !ce_32k_div;
+    ce_32k_div  <=  ce_32k_div + 1'b1;
+    ce_32k      <= !ce_32k_div;
 end
 
 logic [32:0] rtc_data_s;
@@ -809,9 +809,9 @@ cart_top cart
 reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
 
 always @(posedge clk_sys) begin
-    if (palette_download & ioctl_wr) begin
-            palette[127:0] <= {palette[111:0], ioctl_dout[7:0], ioctl_dout[15:8]};
-    end
+  if (palette_download & ioctl_wr) begin
+    palette[127:0] <= {palette[111:0], ioctl_dout[7:0], ioctl_dout[15:8]};
+  end
 end
 
 wire lcd_clkena;
@@ -825,9 +825,6 @@ wire DMA_on;
 
 wire reset = (~reset_n_s | external_reset_s | cart_download | boot_download);
 wire speed;
-
-reg megaduck      = 0;
-reg isGBC         = `isgbc;
 
 wire [15:0] GB_AUDIO_L;
 wire [15:0] GB_AUDIO_R;
@@ -1001,7 +998,7 @@ lcd lcd
     .sgb_en         ( sgb_border_en & sgb_en ),
     .sgb_freeze     ( sgb_lcd_freeze),
 
-    .clk_vid        ( CLK_VIDEO  ),
+    .clk_vid        ( clk_ram  ),
     .hs             ( video_hs_gb   ),
     .vs             ( video_vs_gb   ),
     .hbl            ( h_blank    ),
@@ -1023,18 +1020,23 @@ wire sgb_lcd_clkena, sgb_lcd_on, sgb_lcd_vsync, sgb_lcd_freeze;
 wire [1:0] sgb_lcd_mode;
 wire sgb_pal_en;
 
+wire [7:0] joystick_0 = {cont1_key_s[15], cont1_key_s[14], cont1_key_s[5], cont1_key_s[4], cont1_key_s[0], cont1_key_s[1], cont1_key_s[2], cont1_key_s[3]};
+wire [7:0] joystick_1 = {cont2_key_s[15], cont2_key_s[14], cont2_key_s[5], cont2_key_s[4], cont2_key_s[0], cont2_key_s[1], cont2_key_s[2], cont2_key_s[3]};
+wire [7:0] joystick_2 = {cont3_key_s[15], cont3_key_s[14], cont3_key_s[5], cont3_key_s[4], cont3_key_s[0], cont3_key_s[1], cont3_key_s[2], cont3_key_s[3]};
+wire [7:0] joystick_3 = {cont4_key_s[15], cont4_key_s[14], cont4_key_s[5], cont4_key_s[4], cont4_key_s[0], cont4_key_s[1], cont4_key_s[2], cont4_key_s[3]};
+
 sgb sgb (
     .reset              ( reset | ~loading_done ),
     .clk_sys            ( clk_sys     ),
     .ce                 ( ce_cpu      ),
 
-    .clk_vid            ( CLK_VIDEO   ),
+    .clk_vid            ( clk_ram   ),
     .ce_pix             ( ce_pix      ),
 
-    .joystick_0         ( {cont1_key_s[15], cont1_key_s[14], cont1_key_s[5], cont1_key_s[4], cont1_key_s[0], cont1_key_s[1], cont1_key_s[2], cont1_key_s[3]} ),
-    .joystick_1         ( {cont2_key_s[15], cont2_key_s[14], cont2_key_s[5], cont2_key_s[4], cont2_key_s[0], cont2_key_s[1], cont2_key_s[2], cont2_key_s[3]}  ),
-    .joystick_2         ( {cont3_key_s[15], cont3_key_s[14], cont3_key_s[5], cont3_key_s[4], cont3_key_s[0], cont3_key_s[1], cont3_key_s[2], cont3_key_s[3]}  ),
-    .joystick_3         ( {cont4_key_s[15], cont4_key_s[14], cont4_key_s[5], cont4_key_s[4], cont4_key_s[0], cont4_key_s[1], cont4_key_s[2], cont4_key_s[3]}  ),
+    .joystick_0         ( joystick_0 ),
+    .joystick_1         ( joystick_1 ),
+    .joystick_2         ( joystick_2 ),
+    .joystick_3         ( joystick_3 ),
     .joy_p54            ( joy_p54    ),
     .joy_do             ( joy_do_sgb ),
 
@@ -1131,20 +1133,20 @@ sgb sgb (
 
   always_comb begin
     if(~video_de_reg) begin
-        if(sgb_border_en & sgb_en) begin
-            video_rgb[23:13] = 1;
-            video_rgb[12:3]  = 0;
-            video_rgb[2:0]   = 0;
-        end else begin
-            video_rgb[23:13] = 0;
-            video_rgb[12:3]  = 0;
-            video_rgb[2:0]   = 0;
-        end
+      if(sgb_border_en & sgb_en) begin
+        video_rgb[23:13] = 1;
+        video_rgb[12:3]  = 0;
+        video_rgb[2:0]   = 0;
+      end else begin
+        video_rgb[23:13] = 0;
+        video_rgb[12:3]  = 0;
+        video_rgb[2:0]   = 0;
+      end
     end else begin
       if (bw_en) begin
-          video_rgb = {lum, lum, lum};
+        video_rgb = {lum, lum, lum};
       end else begin
-          video_rgb = video_rgb_reg;
+        video_rgb = video_rgb_reg;
       end
     end
   end
