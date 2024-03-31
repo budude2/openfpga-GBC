@@ -146,7 +146,6 @@ module core_top (
   // RFU, do not use
   output  wire            vpll_feed,
 
-
   //
   // logical connections
   //
@@ -218,7 +217,6 @@ module core_top (
   input   wire    [15:0]  cont2_trig,
   input   wire    [15:0]  cont3_trig,
   input   wire    [15:0]  cont4_trig
-    
 );
 
 // not using the IR port, so turn off both the LED, and
@@ -246,6 +244,10 @@ assign cart_tran_pin30_dir     = 1'bz;
 assign cart_pin30_pwroff_reset = 1'b0;  // hardware can control this
 assign cart_tran_pin31         = 1'bz;      // input
 assign cart_tran_pin31_dir     = 1'b0;  // input
+
+assign port_tran_sd     = 1'bz;
+assign port_tran_sd_dir = 1'b0;     // SD is input and not used
+assign video_skip       = 1'b0;
 
 // tie off the rest of the pins we are not using
 assign cram0_a     = 'h0;
@@ -467,7 +469,7 @@ always_ff @(posedge clk_74a) begin
     end
     else begin
       reset_counter <= reset_counter - 1;
-      core_reset <= 1;
+      core_reset    <= 1;
     end
   end
 end
@@ -477,11 +479,11 @@ end
 // add your own devices here
 always_comb begin
   casex(bridge_addr)
-    32'h2xxxxxxx: begin bridge_rd_data <= save_rd_data;         end
-    32'hF8xxxxxx: begin bridge_rd_data <= cmd_bridge_rd_data;   end
-    32'hF1000000: begin bridge_rd_data <= int_bridge_read_data; end
-    32'hF2000000: begin bridge_rd_data <= int_bridge_read_data; end
-    default:      begin bridge_rd_data <= 0;                    end
+    32'h2xxxxxxx: begin bridge_rd_data = save_rd_data;         end
+    32'hF8xxxxxx: begin bridge_rd_data = cmd_bridge_rd_data;   end
+    32'hF1000000: begin bridge_rd_data = int_bridge_read_data; end
+    32'hF2000000: begin bridge_rd_data = int_bridge_read_data; end
+    default:      begin bridge_rd_data = 0;                    end
   endcase
 end
 
@@ -494,9 +496,9 @@ always_ff @(posedge clk_74a) begin
 
   if(bridge_wr) begin
     case (bridge_addr)
-      32'hF0000000: begin /*         RESET ONLY          */       reset_timer <= 1; end //! Reset Core Command
-      32'hF1000000: begin boot_settings  <= bridge_wr_data;       reset_timer <= 1; end //! System Settings
-      32'hF2000000: begin run_settings   <= bridge_wr_data;                         end //! Runtime settings
+      32'hF0000000: begin /*         RESET ONLY          */ reset_timer <= 1; end //! Reset Core Command
+      32'hF1000000: begin boot_settings  <= bridge_wr_data; reset_timer <= 1; end //! System Settings
+      32'hF2000000: begin run_settings   <= bridge_wr_data;                   end //! Runtime settings
     endcase
   end
 
@@ -526,15 +528,19 @@ synch_3 #(.WIDTH(32)) s09 (run_settings,    run_settings_s,     clk_sys);
 logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en, gba_en;
 logic [1:0] tint;
 
-assign sgb_en         = boot_settings_s[0];
-assign gba_en         = boot_settings_s[1];
+always_comb begin
+  // These settings trigger a reset
+  sgb_en         = boot_settings_s[0];
+  gba_en         = boot_settings_s[1];
 
-assign rumble_en      = run_settings_s[0];
-assign originalcolors = run_settings_s[1];
-assign ff_snd_en      = run_settings_s[2];
-assign ff_en          = run_settings_s[3];
-assign sgb_border_en  = run_settings_s[4];
-assign tint           = run_settings_s[6:5];
+  // These settings don't
+  rumble_en      = run_settings_s[0];
+  originalcolors = run_settings_s[1];
+  ff_snd_en      = run_settings_s[2];
+  ff_en          = run_settings_s[3];
+  sgb_border_en  = run_settings_s[4];
+  tint           = run_settings_s[6:5];
+end
 
 mf_pllbase mp1
 (
@@ -567,14 +573,13 @@ data_loader #(
   .write_data           ( ioctl_dout            )
 );
 
-logic bk_wr, bk_rtc_wr;
+logic bk_wr, bk_rtc_wr, loading_done;
 logic [16:0] bk_addr;
 logic [15:0] bk_data, bk_q;
-logic [31:0] save_rd_data;
-logic [31:0] loaded_save_size;
-logic loading_done;
+logic [31:0] save_rd_data, loaded_save_size;
 
-save_handler save_handler (
+save_handler save_handler
+(
   .clk_74a              ( clk_74a                         ),
   .clk_sys              ( clk_sys                         ),
   .reset                ( reset                           ),
@@ -614,24 +619,19 @@ save_handler save_handler (
 
 reg ioctl_download = 0;
 
-always @(posedge clk_74a) begin
+always_ff @(posedge clk_74a) begin
   if      (dataslot_requestwrite) ioctl_download <= 1;
   else if (dataslot_allcomplete)  ioctl_download <= 0;
 end
 
-wire [14:0] cart_addr;
-wire [22:0] mbc_addr;
-wire cart_a15;
-wire cart_rd;
-wire cart_wr;
-wire cart_oe;
-wire [7:0] cart_di, cart_do;
-wire nCS; // WRAM or Cart RAM CS
+logic [14:0] cart_addr;
+logic [22:0] mbc_addr;
+logic cart_a15, cart_rd, cart_wr, cart_oe, nCS;
+logic [7:0] cart_di, cart_do;
 
-wire        ioctl_wr;
-wire [24:0] ioctl_addr;
-wire [15:0] ioctl_dout;
-wire        ioctl_wait;
+logic        ioctl_wr, ioctl_wait;
+logic [24:0] ioctl_addr;
+logic [15:0] ioctl_dout;
 
 wire cart_download       = ioctl_download && (dataslot_requestwrite_id == 1);
 wire md_download         = ioctl_download && (dataslot_requestwrite_id[7:0] == 8'h81);
@@ -708,7 +708,7 @@ rumbler rumbler_module
 
 reg ce_32k; // 32768Hz clock for RTC
 reg [9:0] ce_32k_div;
-always @(posedge clk_sys) begin
+always_ff @(posedge clk_sys) begin
   ce_32k_div  <=  ce_32k_div + 1'b1;
   ce_32k      <= !ce_32k_div;
 end
@@ -717,7 +717,7 @@ logic [32:0] rtc_data_s;
 
 sync_fifo #(
   .WIDTH ( 33 )
-) RTC_FIFO (
+) RTC_FIFO(
   .clk_write  ( clk_74a                         ),
   .clk_read   ( clk_sys                         ),
 
@@ -806,7 +806,7 @@ cart_top cart
 
 reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
 
-always @(posedge clk_sys) begin
+always_ff @(posedge clk_sys) begin
   if (palette_download & ioctl_wr) begin
     palette[127:0] <= {palette[111:0], ioctl_dout[7:0], ioctl_dout[15:8]};
   end
@@ -828,11 +828,19 @@ wire [15:0] GB_AUDIO_L;
 wire [15:0] GB_AUDIO_R;
 
 wire sc_int_clock_out, ser_clk_out, ser_clk_in;
-assign port_tran_sck = sc_int_clock_out ? ser_clk_out : 1'bZ;
-assign ser_clk_in = port_tran_sck;
-assign port_tran_sck_dir = sc_int_clock_out;
-assign port_tran_so_dir  = 1'b1;
-assign port_tran_si_dir  = 1'b0;
+
+always_comb begin
+  port_tran_so_dir  = 1'b1;
+  port_tran_si_dir  = 1'b0;
+  ser_clk_in        = port_tran_sck;
+  port_tran_sck_dir = sc_int_clock_out;
+
+  if (sc_int_clock_out) begin
+    port_tran_sck = ser_clk_out;
+  end else begin
+    port_tran_sck = 1'bZ;
+  end                   
+end
 
 // the gameboy itself
 gb gb
@@ -1086,7 +1094,7 @@ reg de_prev;
 
 wire de = ~(h_blank || v_blank);
 
-always @(posedge clk_vid) begin
+always_ff @(posedge clk_vid) begin
   video_hs_reg  <= 0;
   video_de_reg  <= 0;
   video_rgb_reg <= 24'h0;
@@ -1100,7 +1108,7 @@ always @(posedge clk_vid) begin
   end
 
   if (hs_delay > 0) begin
-    hs_delay <= hs_delay - 1;
+    hs_delay <= hs_delay - 3'h1;
   end
 
   if (hs_delay == 1) begin
@@ -1179,7 +1187,7 @@ speedcontrol speedcontrol
 reg fast_forward;
 reg ff_latch;
 
-always @(posedge clk_sys) begin : ffwd
+always_ff @(posedge clk_sys) begin : ffwd
   reg last_ffw;
   reg ff_was_held;
   longint ff_count;
@@ -1199,7 +1207,7 @@ always @(posedge clk_sys) begin : ffwd
 
     if (ff_count < 4800000 && ~ff_was_held) begin
       ff_was_held <= 1;
-      ff_latch <= 1;
+      ff_latch    <= 1;
     end
   end
 
