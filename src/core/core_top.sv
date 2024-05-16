@@ -804,7 +804,7 @@ cart_top cart
   .rumbling                   ( rumbling          )
 );
 
-reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
+reg [127:0] palette = 128'hFFFFFFADADAD52525200000000000000;
 
 always_ff @(posedge clk_sys) begin
   if (palette_download & ioctl_wr) begin
@@ -1134,7 +1134,7 @@ assign video_hs           = video_hs_reg;
 assign video_vs           = video_vs_reg;
 
 wire [7:0] lum;
-assign lum = (video_rgb_reg[23:16]>>2) + (video_rgb_reg[23:16]>>5) + (video_rgb_reg[15:8]>>1) + (video_rgb_reg[15:8]>>4) + (video_rgb_reg[7:0]>>4) + (video_rgb_reg[7:0]>>5);
+assign lum = (21 * video_rgb_reg[23:16] + 72 * video_rgb_reg[15:8] + 7 * video_rgb_reg[7:0]) / 100;
 
 always_comb begin
   if(~video_de_reg) begin
