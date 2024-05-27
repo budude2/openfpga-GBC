@@ -628,21 +628,33 @@ logic [14:0] cart_addr;
 logic [22:0] mbc_addr;
 logic cart_a15, cart_rd, cart_wr, cart_oe, nCS;
 logic [7:0] cart_di, cart_do;
-
 logic        ioctl_wr, ioctl_wait;
 logic [24:0] ioctl_addr;
 logic [15:0] ioctl_dout;
+logic boot_download, cart_download, palette_download, sgb_border_download, cgb_boot_download, dmg_boot_download, sgb_boot_download;
 
-wire cart_download       = ioctl_download && (dataslot_requestwrite_id == 1);
-wire md_download         = ioctl_download && (dataslot_requestwrite_id[7:0] == 8'h81);
-wire palette_download    = ioctl_download && (dataslot_requestwrite_id == 3 /*|| !filetype*/);
-wire sgb_border_download = ioctl_download && (dataslot_requestwrite_id == 2);
-wire cgb_boot_download   = ioctl_download && (dataslot_requestwrite_id == 4);
-wire dmg_boot_download   = ioctl_download && (dataslot_requestwrite_id == 5);
-wire sgb_boot_download   = ioctl_download && (dataslot_requestwrite_id == 6);
-wire boot_download       = cgb_boot_download | dmg_boot_download | sgb_boot_download;
+always_comb begin
+  cart_download       = 0;
+  sgb_border_download = 0;
+  palette_download    = 0;
+  cgb_boot_download   = 0;
+  dmg_boot_download   = 0;
+  sgb_boot_download   = 0;
 
-reg megaduck  = 0;
+  if(ioctl_download) begin
+    case (dataslot_requestwrite_id)
+      1: begin cart_download        = 1'b1; end
+      2: begin sgb_border_download  = 1'b1; end
+      3: begin palette_download     = 1'b1; end
+      4: begin cgb_boot_download    = 1'b1; end
+      5: begin dmg_boot_download    = 1'b1; end
+      6: begin sgb_boot_download    = 1'b1; end
+    endcase
+  end
+
+  boot_download  = cgb_boot_download | dmg_boot_download | sgb_boot_download;
+end
+
 reg isGBC     = `isgbc;
 
 wire  [1:0] sdram_ds     =  cart_download ? 2'b11 : {mbc_addr[0], ~mbc_addr[0]};
@@ -735,7 +747,7 @@ cart_top cart
   .ce_cpu                     ( ce_cpu            ),
   .ce_cpu2x                   ( ce_cpu2x          ),
   .speed                      ( speed             ),
-  .megaduck                   ( megaduck          ),
+  .megaduck                   ( 0                 ),
   .mapper_sel                 ( 0                 ),
 
   .cart_addr                  ( cart_addr         ),
@@ -854,7 +866,7 @@ gb gb
   .isGBC                  ( isGBC                 ),
   .real_cgb_boot          ( 1                     ),  
   .isSGB                  ( sgb_en & ~isGBC       ),
-  .megaduck               ( megaduck              ),
+  .megaduck               ( 0                     ),
 
   .joy_p54                ( joy_p54               ),
   .joy_din                ( joy_do_sgb            ),
@@ -987,7 +999,7 @@ lcd lcd
 
   .isGBC          ( isGBC                   ),
 
-  .tint           ( |tint                   ),
+  .tint           ( |tint & ~bw_en          ),
   .inv            ( 0                       ),
   .originalcolors ( originalcolors          ),
   .analog_wide    ( 0                       ),
@@ -1046,7 +1058,7 @@ sgb sgb (
   .joy_do             ( joy_do_sgb                    ),
 
   .sgb_en             ( sgb_en & isSGB_game & ~isGBC  ),
-  .tint               ( tint[1]                       ),
+  .tint               ( tint[1] & ~bw_en              ),
   .isGBC_game         ( isGBC & isGBC_game            ),
 
   .lcd_on             ( lcd_on                        ),

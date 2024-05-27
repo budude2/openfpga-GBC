@@ -11,6 +11,16 @@
         "address": "0x10000000"
       },
       {
+        "name": "Save",
+        "id": 18,
+        "required": false,
+        "parameters": "0x84",
+        "nonvolatile": true,
+        "extensions": ["sav", "srm"],
+        "address": "0x20000000",
+        "size_maximum": "0x20050"
+      },
+      {
         "name": "SGB Border",
         "id": 2,
         "required": false,
@@ -25,16 +35,6 @@
         "parameters": "0x009",
         "extensions": ["gbp"],
         "address": "0x10000000"
-      },
-      {
-        "name": "Save",
-        "id": 18,
-        "required": false,
-        "parameters": "0x84",
-        "nonvolatile": true,
-        "extensions": ["sav", "srm"],
-        "address": "0x20000000",
-        "size_maximum": "0x20050"
       },
       {
         "name": "DMG BIOS",
