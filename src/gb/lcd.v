@@ -283,7 +283,7 @@ wire [31:0] g10 = (g5 * 3) + b5;
 wire [31:0] b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
 
 // greyscale
-wire [7:0] grey = (pixel==0) ? 8'd252 : (pixel==1) ? 8'd168 : (pixel==2) ? 8'd96 : 8'd0;
+wire [7:0] grey = (pixel==0) ? 8'd255 : (pixel==1) ? 8'd173 : (pixel==2) ? 8'd82 : 8'd0;
 
 // sgb_border_pix contains backdrop color when sgb_border_pix[15] is low.
 wire sgb_border = sgb_border_pix[15] & sgb_en;
