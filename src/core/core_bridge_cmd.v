@@ -451,8 +451,12 @@ always @(posedge clk) begin
             hstate <= ST_DONE_OK;
         end
         16'h00B8: begin
-            // Enable BW
-            bw_en <= host_20[0];
+            // Enable BW'h
+            if(host_20[15:8] == 8'h20) begin
+                bw_en <= 1'b1;
+            end else begin            
+                bw_en <= host_20[0];
+            end
 
             if(host_20[0]) begin
                 host_40 <= 16'h444D;

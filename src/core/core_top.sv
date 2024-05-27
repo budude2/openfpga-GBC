@@ -999,7 +999,7 @@ lcd lcd
 
   .isGBC          ( isGBC                   ),
 
-  .tint           ( |tint                   ),
+  .tint           ( |tint & ~bw_en          ),
   .inv            ( 0                       ),
   .originalcolors ( originalcolors          ),
   .analog_wide    ( 0                       ),
@@ -1058,7 +1058,7 @@ sgb sgb (
   .joy_do             ( joy_do_sgb                    ),
 
   .sgb_en             ( sgb_en & isSGB_game & ~isGBC  ),
-  .tint               ( tint[1]                       ),
+  .tint               ( tint[1] & ~bw_en              ),
   .isGBC_game         ( isGBC & isGBC_game            ),
 
   .lcd_on             ( lcd_on                        ),
