@@ -368,8 +368,9 @@ always @(posedge clk_sys) begin
 	if (reset) begin
 		joypad_id <= 0;
 	end else if (ce) begin
+		joypad_id <= (joypad_id & mlt_ctrl);
 		if (sgb_en & ~old_p15 & p15) begin
-			joypad_id <= (joypad_id + 1'b1) & mlt_ctrl;
+			joypad_id <= (joypad_id + 1'b1);
 		end
 	end
 end

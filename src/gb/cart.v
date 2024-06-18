@@ -71,7 +71,7 @@ module cart_top (
 	input   [7:0] Savestate_CRAMWriteData,
 	output  [7:0] Savestate_CRAMReadData,
 	output        rumbling
-    );
+);
 ///////////////////////////////////////////////////
 
 
@@ -277,11 +277,12 @@ always @(posedge clk_sys) begin
 		mmm01 <= 0;
 		{ sachen, sachen_t1, sachen_t2 } <= 0;
 		mapper_sel_r <= mapper_sel;
+		rom_mask <= 9'd0;
 	end
 
 	if(cart_download & ioctl_wr) begin
 
-		rom_mask <= ioctl_addr[22:14];
+		rom_mask <= ioctl_addr[22:14] | rom_mask;
 
 		if (megaduck) begin
 			cart_cgb_flag <= 0;
@@ -420,7 +421,7 @@ assign ram_mask_file =              // 0 - no ram
 
 assign has_save = mbc_battery && (cart_ram_size > 0 || mbc2 || mbc7 || tama);
 
-//Up to 8kb * 16banks of Cart Ram (128kb)
+// Up to 8kb * 16banks of Cart Ram (128kb)
 dpram #(16) cram_l (
 	.clock_a (clk_sys),
 	.address_a (cram_addr[16:1]),

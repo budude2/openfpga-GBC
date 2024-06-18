@@ -135,7 +135,7 @@ wire [63:0] SaveStateBus_wired_or[0:SAVESTATE_MODULES-1];
 
 wire [56:0] SS_Top;
 wire [56:0] SS_Top_BACK;
-eReg_SavestateV #(0, 31, 56, 0, 64'h0000000000800001) iREG_SAVESTATE_Top (clk_sys, SaveStateBus_Din, SaveStateBus_Adr, SaveStateBus_wren, SaveStateBus_rst, SaveStateBus_wired_or[6], SS_Top_BACK, SS_Top);  
+eReg_SavestateV #(0, 31, 56, 0, 64'h0000000000800000) iREG_SAVESTATE_Top (clk_sys, SaveStateBus_Din, SaveStateBus_Adr, SaveStateBus_wren, SaveStateBus_rst, SaveStateBus_wired_or[6], SS_Top_BACK, SS_Top);
 
 wire [10:0] SS_Top2;
 wire [10:0] SS_Top2_BACK;
@@ -861,8 +861,10 @@ wire [12:0] wram_addr_i = ~isGBC ? ext_bus_addr[12:0] :
                                 dma_read_wram_bus ? dma_addr[12:0] :
                                 cpu_addr[12:0];
 
-wire [14:0] wram_addr = (wram_addr_i[12]) ? { wram_bank, wram_addr_i[11:0] }  // bank 1-7 $D000-DFFF
-                                          : {      3'd0, wram_addr_i[11:0] }; // bank 0   $C000-CFFF
+// 0 -> 1
+wire [2:0] wram_bank_o = (!wram_bank ? 3'd1 : wram_bank);
+wire [14:0] wram_addr = (wram_addr_i[12]) ? { wram_bank_o, wram_addr_i[11:0] }  // bank 1-7 $D000-DFFF
+                                          : {        3'd0, wram_addr_i[11:0] }; // bank 0   $C000-CFFF
 
 dpram #(15) wram (
 	.clock_a   (clk_cpu),
@@ -883,12 +885,9 @@ assign SS_Top_BACK[2:0] = wram_bank;
 
 always @(posedge clk_sys) begin
 	if(reset_ss)
-		wram_bank <= SS_Top[2:0]; // 3'd1;
+		wram_bank <= SS_Top[2:0]; // 3'd0;
 	else if(ce_cpu && sel_wram_bank && !cpu_wr_n_edge) begin
-		if (cpu_do[2:0]==3'd0) // 0 -> 1;
-			wram_bank <= 3'd1;
-		else
-			wram_bank <= cpu_do[2:0];
+		wram_bank <= cpu_do[2:0];
 	end
 end
 
