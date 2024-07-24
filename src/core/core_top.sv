@@ -315,8 +315,8 @@ wire            rtc_valid;
 
 wire            savestate_supported   = 1;
 wire    [31:0]  savestate_addr        = 32'h40000000;
-//wire    [31:0]  savestate_size        = 32'h14330; // 32768 + 16384 + 160 + 128 + cart_ram_size + 528
-wire    [31:0]  savestate_addr        = 49968 + save_size_bytes_ext;
+//wire    [31:0]  savestate_size        = 32'h2C330; // 32768 + 16384 + 160 + 128 + 131072 + 528
+wire    [31:0]  savestate_size        = 49968 + cart_ram_size_bytes;
 wire    [31:0]  savestate_maxloadsize = savestate_size;
 
 wire            savestate_start;
@@ -474,7 +474,7 @@ end
 always_comb begin
   casex(bridge_addr)
     32'h2xxxxxxx: begin bridge_rd_data = save_rd_data;         end
-    32'h4xxxxxxx: begin bridge_rd_data = save_state_bridge_read_data end
+    32'h4xxxxxxx: begin bridge_rd_data = save_state_bridge_read_data; end
     32'hF8xxxxxx: begin bridge_rd_data = cmd_bridge_rd_data;   end
     32'hF1000000: begin bridge_rd_data = int_bridge_read_data; end
     32'hF2000000: begin bridge_rd_data = int_bridge_read_data; end
@@ -667,6 +667,18 @@ save_handler save_handler
 
     .ss_busy                      ( sleep_savestate )
   );
+
+  wire [31:0] cart_ram_size_bytes;
+
+  always_comb begin
+    case (cart_ram_size)
+            0: begin cart_ram_size_bytes  =    512; end // for MBC2
+            1: begin cart_ram_size_bytes  =   2048; end // 2   KByte
+            2: begin cart_ram_size_bytes  =   8192; end // 8   KByte
+            3: begin cart_ram_size_bytes  =  32768; end // 32  KByte
+      default: begin cart_ram_size_bytes  = 131072; end // 128 KByte 
+    endcase
+  end
 
 //////// Start GB/GBC Stuff ////////
 
@@ -930,100 +942,100 @@ end
 // the gameboy itself
 gb gb
 (
-  .reset                  ( reset | ~loading_done ),
+  .reset                  ( reset | ~loading_done   ),
   
-  .clk_sys                ( clk_sys               ),
-  .ce                     ( ce_cpu                ),   // the whole gameboy runs on 4mhnz
-  .ce_2x                  ( ce_cpu2x              ),   // ~8MHz in dualspeed mode (GBC)
+  .clk_sys                ( clk_sys                 ),
+  .ce                     ( ce_cpu                  ),   // the whole gameboy runs on 4mhnz
+  .ce_2x                  ( ce_cpu2x                ),   // ~8MHz in dualspeed mode (GBC)
   
-  .isGBC                  ( isGBC                 ),
-  .real_cgb_boot          ( 1                     ),  
-  .isSGB                  ( sgb_en & ~isGBC       ),
-  .megaduck               ( 0                     ),
+  .isGBC                  ( isGBC                   ),
+  .real_cgb_boot          ( 1                       ),  
+  .isSGB                  ( sgb_en & ~isGBC         ),
+  .megaduck               ( 0                       ),
 
-  .joy_p54                ( joy_p54               ),
-  .joy_din                ( joy_do_sgb            ),
+  .joy_p54                ( joy_p54                 ),
+  .joy_din                ( joy_do_sgb              ),
 
   // interface to the "external" game cartridge
-  .ext_bus_addr           ( cart_addr             ),
-  .ext_bus_a15            ( cart_a15              ),
-  .cart_rd                ( cart_rd               ),
-  .cart_wr                ( cart_wr               ),
-  .cart_do                ( cart_do               ),
-  .cart_di                ( cart_di               ),
-  .cart_oe                ( cart_oe               ),
+  .ext_bus_addr           ( cart_addr               ),
+  .ext_bus_a15            ( cart_a15                ),
+  .cart_rd                ( cart_rd                 ),
+  .cart_wr                ( cart_wr                 ),
+  .cart_do                ( cart_do                 ),
+  .cart_di                ( cart_di                 ),
+  .cart_oe                ( cart_oe                 ),
 
-  .nCS                    ( nCS                   ),
+  .nCS                    ( nCS                     ),
 
-  .boot_gba_en            ( gba_en                ),
-  .fast_boot_en           ( 0                     ),
+  .boot_gba_en            ( gba_en                  ),
+  .fast_boot_en           ( 0                       ),
 
-  .cgb_boot_download      ( cgb_boot_download     ),
-  .dmg_boot_download      ( dmg_boot_download     ),
-  .sgb_boot_download      ( sgb_boot_download     ),
-  .ioctl_wr               ( ioctl_wr              ),
-  .ioctl_addr             ( ioctl_addr            ),
-  .ioctl_dout             ( ioctl_dout            ),
+  .cgb_boot_download      ( cgb_boot_download       ),
+  .dmg_boot_download      ( dmg_boot_download       ),
+  .sgb_boot_download      ( sgb_boot_download       ),
+  .ioctl_wr               ( ioctl_wr                ),
+  .ioctl_addr             ( ioctl_addr              ),
+  .ioctl_dout             ( ioctl_dout              ),
 
   // audio
-  .audio_l                ( GB_AUDIO_L            ),
-  .audio_r                ( GB_AUDIO_R            ),
+  .audio_l                ( GB_AUDIO_L              ),
+  .audio_r                ( GB_AUDIO_R              ),
   
   // interface to the lcd
-  .lcd_clkena             ( lcd_clkena            ),
-  .lcd_data               ( lcd_data              ),
-  .lcd_data_gb            ( lcd_data_gb           ),
-  .lcd_mode               ( lcd_mode              ),
-  .lcd_on                 ( lcd_on                ),
-  .lcd_vsync              ( lcd_vsync             ),
+  .lcd_clkena             ( lcd_clkena              ),
+  .lcd_data               ( lcd_data                ),
+  .lcd_data_gb            ( lcd_data_gb             ),
+  .lcd_mode               ( lcd_mode                ),
+  .lcd_on                 ( lcd_on                  ),
+  .lcd_vsync              ( lcd_vsync               ),
   
-  .speed                  ( speed                 ),
-  .DMA_on                 ( DMA_on                ),
+  .speed                  ( speed                   ),
+  .DMA_on                 ( DMA_on                  ),
   
   // serial port
-  .sc_int_clock2          ( sc_int_clock_out      ),
-  .serial_clk_in          ( ser_clk_in            ),
-  .serial_data_in         ( port_tran_si          ),
-  .serial_clk_out         ( ser_clk_out           ),
-  .serial_data_out        ( port_tran_so          ),
+  .sc_int_clock2          ( sc_int_clock_out        ),
+  .serial_clk_in          ( ser_clk_in              ),
+  .serial_data_in         ( port_tran_si            ),
+  .serial_clk_out         ( ser_clk_out             ),
+  .serial_data_out        ( port_tran_so            ),
   
   // Palette download will disable cheats option (HPS doesn't distinguish downloads),
   // so clear the cheats and disable second option (chheats enable/disable)
-  .gg_reset               ( 0                     ),
-  .gg_en                  ( 0                     ),
-  .gg_code                ( 0                     ),
-  .gg_available           (                       ),
+  .gg_reset               ( 0                       ),
+  .gg_en                  ( 0                       ),
+  .gg_code                ( 0                       ),
+  .gg_available           (                         ),
   
   // savestates
-  .increaseSSHeaderCount  ( 0                 ),
-  .cart_ram_size          ( cart_ram_size     ),
-  .save_state             ( ss_save           ),
-  .load_state             ( ss_load           ),
-  .savestate_number       ( 0                 ),
-  .sleep_savestate        ( sleep_savestate   ),
+  .increaseSSHeaderCount  ( 0                       ),
+  .cart_ram_size          ( cart_ram_size           ),
+  .save_state             ( ss_save                 ),
+  .load_state             ( ss_load                 ),
+  .savestate_number       ( 1                       ),
+  .sleep_savestate        ( sleep_savestate         ),
 
-  .SaveStateExt_Din       ( SaveStateExt_Din  ),
-  .SaveStateExt_Adr       ( SaveStateExt_Adr  ),
-  .SaveStateExt_wren      ( SaveStateExt_wren ),
-  .SaveStateExt_rst       ( SaveStateExt_rst  ),
-  .SaveStateExt_Dout      ( SaveStateExt_Dout ),
-  .SaveStateExt_load      ( SaveStateExt_load ),
+  .SaveStateExt_Din       ( SaveStateExt_Din        ),
+  .SaveStateExt_Adr       ( SaveStateExt_Adr        ),
+  .SaveStateExt_wren      ( SaveStateExt_wren       ),
+  .SaveStateExt_rst       ( SaveStateExt_rst        ),
+  .SaveStateExt_Dout      ( SaveStateExt_Dout       ),
+  .SaveStateExt_load      ( SaveStateExt_load       ),
   
-  .Savestate_CRAMAddr     ( Savestate_CRAMAddr),
-  .Savestate_CRAMRWrEn    ( Savestate_CRAMRWrEn),
-  .Savestate_CRAMWriteData( Savestate_CRAMWriteData),
-  .Savestate_CRAMReadData ( Savestate_CRAMReadData),
+  .Savestate_CRAMAddr     ( Savestate_CRAMAddr      ),
+  .Savestate_CRAMRWrEn    ( Savestate_CRAMRWrEn     ),
+  .Savestate_CRAMWriteData( Savestate_CRAMWriteData ),
+  .Savestate_CRAMReadData ( Savestate_CRAMReadData  ),
   
-  .SAVE_out_Din           ( ss_din            ),            // data read from savestate
-  .SAVE_out_Dout          ( ss_dout           ),           // data written to savestate
-  .SAVE_out_Adr           ( ss_addr           ),           // all addresses are DWORD addresses!
-  .SAVE_out_rnw           ( ss_rnw            ),            // read = 1, write = 0
-  .SAVE_out_ena           ( ss_req            ),            // one cycle high for each action
-  .SAVE_out_be            ( ss_be             ),            
-  .SAVE_out_done          ( ss_ack            ),            // should be one cycle high when write is done or read value is valid
+  .SAVE_out_Din           ( ss_din                  ), // data read from savestate
+  .SAVE_out_Dout          ( ss_dout                 ), // data written to savestate
+  .SAVE_out_Adr           ( ss_addr                 ), // all addresses are DWORD addresses!
+  .SAVE_out_rnw           ( ss_rnw                  ), // read = 1, write = 0
+  .SAVE_out_ena           ( ss_req                  ), // one cycle high for each action
+  .SAVE_out_be            ( ss_be                   ),            
+  .SAVE_out_done          ( ss_ack                  ), // should be one cycle high when write is done or read value is valid
   
-  .rewind_on              ( 0                     ),
-  .rewind_active          ( 0                     )
+  .rewind_on              ( 0                       ),
+  .rewind_active          ( 0                       )
 );
 
 // Sound
