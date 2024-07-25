@@ -742,6 +742,7 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimiso
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimosi
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 set_global_assignment -name SYSTEMVERILOG_FILE gb/sram_128k_x1_x16.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/save_state_controller.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/rtc_loader.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/rumbler.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/save_handler.sv
