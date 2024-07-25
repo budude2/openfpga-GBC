@@ -274,13 +274,6 @@ assign cram1_we_n  = 1;
 assign cram1_ub_n  = 1;
 assign cram1_lb_n  = 1;
 
-assign sram_a      = 'h0;
-assign sram_dq     = {16{1'bZ}};
-assign sram_oe_n   = 1;
-assign sram_we_n   = 1;
-assign sram_ub_n   = 1;
-assign sram_lb_n   = 1;
-
 assign dbg_tx      = 1'bZ;
 assign user1       = 1'bZ;
 assign aux_scl     = 1'bZ;
@@ -624,6 +617,13 @@ always_ff @(posedge clk_74a) begin
   else if (dataslot_allcomplete)  ioctl_download <= 0;
 end
 
+reg ioctl_upload = 0;
+
+always_ff @(posedge clk_74a) begin
+  if      (dataslot_requestread) ioctl_upload <= 1;
+  else if (dataslot_allcomplete) ioctl_upload <= 0;
+end
+
 logic [14:0] cart_addr;
 logic [22:0] mbc_addr;
 logic cart_a15, cart_rd, cart_wr, cart_oe, nCS;
@@ -813,7 +813,15 @@ cart_top cart
   .Savestate_CRAMWriteData    ( 0                 ),
   .Savestate_CRAMReadData     (                   ),
   
-  .rumbling                   ( rumbling          )
+  .rumbling                   ( rumbling          ),
+
+  // SRAM External Interface
+  .sram_addr                  ( sram_a            ), //! Address Out
+  .sram_dq                    ( sram_dq           ), //! Data In/Out
+  .sram_oe_n                  ( sram_oe_n         ), //! Output Enable
+  .sram_we_n                  ( sram_we_n         ), //! Write Enable
+  .sram_ub_n                  ( sram_ub_n         ), //! Upper Byte Mask
+  .sram_lb_n                  ( sram_lb_n         )  //! Lower Byte Mask
 );
 
 reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
