@@ -434,13 +434,13 @@ wire [15:0] cram_q_o;
 
 assign cram_q_h = cram_q_o[15:8];
 assign cram_q_l = cram_q_o[7:0];
-assign bk_q = cram_q_o;
+assign bk_q     = cram_q_o;
 
 sram u_cram
 (
   // Clock and Reset
-  .clk        ( clk_sys                     ), //! Input Clock
-  .reset      ( cart_download               ), //! Reset
+  .clk        ( clk_sys       ), //! Input Clock
+  .reset      ( cart_download ), //! Reset
 
   // Single Port Internal Bus Interface
   .we         ( bk_en ? bk_wr     : cram_wr                   ), //! Write Enable
@@ -451,12 +451,12 @@ sram u_cram
   .q          ( cram_q_o ), //! Data Out
 
   // SRAM External Interface
-  .sram_addr  ( sram_addr                   ), //! Address Out
-  .sram_dq    ( sram_dq                     ), //! Data In/Out
-  .sram_oe_n  ( sram_oe_n                   ), //! Output Enable
-  .sram_we_n  ( sram_we_n                   ), //! Write Enable
-  .sram_ub_n  ( sram_ub_n                   ), //! Upper Byte Mask
-  .sram_lb_n  ( sram_lb_n                   )  //! Lower Byte Mask
+  .sram_addr  ( sram_addr ), //! Address Out
+  .sram_dq    ( sram_dq   ), //! Data In/Out
+  .sram_oe_n  ( sram_oe_n ), //! Output Enable
+  .sram_we_n  ( sram_we_n ), //! Write Enable
+  .sram_ub_n  ( sram_ub_n ), //! Upper Byte Mask
+  .sram_lb_n  ( sram_lb_n )  //! Lower Byte Mask
 );
 
 endmodule

@@ -51,28 +51,67 @@ module sram
         output  reg        sram_lb_n  //! Lower Byte Mask
     );
 
-    always @(posedge clk) begin : RW_SRAM
+    typedef enum logic [1:0] {
+        IDLE,
+        RESET_MEMORY,
+        NORMAL_OPERATION
+    } state_t;
+
+    state_t state, next_state;
+    reg [16:0] reset_counter;
+
+    // State machine transitions
+    always_ff @(posedge clk or posedge reset) begin
         if(reset) begin
-            {sram_lb_n, sram_ub_n} <= 2'b11;     // Mask Low/High Byte
-            sram_addr <= {17{1'bX}};             // Set Address as "Don't Care"
-            sram_dq   <= {16{1'bZ}};             // Set Data Bus as High Impedance (Tristate)
+            state <= RESET_MEMORY;
+            reset_counter <= 0;
         end
         else begin
-            sram_addr <= {17{1'bX}};             // Set Address as "Don't Care"
-            sram_dq   <= {16{1'bZ}};             // Set Data Bus as High Impedance (Tristate)
-            if(we) begin
-                {sram_oe_n, sram_we_n} <= 2'b10; // Output Disabled/Write Enabled
-                {sram_lb_n, sram_ub_n} <= {~lb, ~ub};
-                sram_addr <= addr;               // Set Address
-                sram_dq   <= d;                  // Write Data
-            end
-            else begin
-                {sram_oe_n, sram_we_n} <= 2'b01; // Write Disabled/Output Enabled
-                {sram_lb_n, sram_ub_n} <= 2'b00;     // Mask Low/High Byte 
-                sram_addr <= addr;               // Set Address
-                q         <= sram_dq;            // Read Data
+            state <= next_state;
+            if (state == RESET_MEMORY) begin
+                reset_counter <= reset_counter + 1;
             end
         end
+    end
+
+    // State machine logic
+    always_ff @(posedge clk) begin : sramFSM
+        case (state)
+            RESET_MEMORY: begin
+                {sram_lb_n, sram_ub_n} <= 2'b00;     // Unmask Low/High Byte
+                sram_addr <= reset_counter;          // Set Address
+                sram_dq   <= 16'h0000;               // Write Zeros
+                {sram_oe_n, sram_we_n} <= 2'b10;     // Output Disabled/Write Enabled
+
+                if (reset_counter == 17'h1FFFF) begin
+                    next_state <= NORMAL_OPERATION;
+                end
+                else begin
+                    next_state <= RESET_MEMORY;
+                end
+            end
+            NORMAL_OPERATION: begin
+                sram_addr <= {17{1'bX}};             // Set Address as "Don't Care"
+                sram_dq   <= {16{1'bZ}};             // Set Data Bus as High Impedance (Tristate)
+                if(we) begin
+                    {sram_lb_n, sram_ub_n} <= {~lb, ~ub};
+                    {sram_oe_n, sram_we_n} <= 2'b10; // Output Disabled/Write Enabled
+                    sram_addr <= addr;               // Set Address
+                    sram_dq   <= d;                  // Write Data
+                end
+                else begin
+                    {sram_lb_n, sram_ub_n} <= 2'b00;     // Mask Low/High Byte 
+                    {sram_oe_n, sram_we_n} <= 2'b01; // Write Disabled/Output Enabled
+                    sram_addr <= addr;               // Set Address
+                    q         <= sram_dq;            // Read Data
+                end
+                next_state <= NORMAL_OPERATION;
+            end
+
+            default: begin
+                next_state <= IDLE;
+            end
+        endcase
     end
 
 endmodule
