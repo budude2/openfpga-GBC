@@ -566,7 +566,7 @@ data_loader #(
   .write_data           ( ioctl_dout            )
 );
 
-logic bk_wr, bk_rtc_wr, loading_done;
+logic bk_wr, bk_rd, bk_rtc_wr, loading_done;
 logic [16:0] bk_addr;
 logic [15:0] bk_data, bk_q;
 logic [31:0] save_rd_data, loaded_save_size;
@@ -778,6 +778,7 @@ cart_top cart
   .isSGB_game                 ( isSGB_game        ),
 
   .ioctl_download             ( ioctl_download    ),
+  .ioctl_upload               ( ioctl_upload      ),
   .ioctl_wr                   ( ioctl_wr          ),
   .ioctl_addr                 ( ioctl_addr        ),
   .ioctl_dout                 ( ioctl_dout        ),
