@@ -1,5 +1,6 @@
 module cart_top (
 	input         reset,
+	input         sram_rst,
 
 	input         clk_sys,
 	input         ce_cpu,
@@ -78,7 +79,9 @@ module cart_top (
   output        sram_oe_n,
   output        sram_we_n,
   output        sram_ub_n,
-  output        sram_lb_n
+  output        sram_lb_n,
+
+  output        sram_wipe_done
 );
 ///////////////////////////////////////////////////
 
@@ -439,8 +442,9 @@ assign bk_q     = cram_q_o;
 sram u_cram
 (
   // Clock and Reset
-  .clk        ( clk_sys       ), //! Input Clock
-  .reset      ( cart_download ), //! Reset
+  .clk        		( clk_sys       		), //! Input Clock
+  .reset      		( sram_rst      		), //! Reset
+  .sram_wipe_done ( sram_wipe_done    ),
 
   // Single Port Internal Bus Interface
   .we         ( bk_en ? bk_wr     : cram_wr                   ), //! Write Enable

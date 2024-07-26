@@ -35,6 +35,8 @@ module sram
         // Clock and Reset
         input  wire        clk,       //! Input Clock
         input  wire        reset,     //! Reset
+        output wire        sram_wipe_done,
+
         // Single Port Internal Bus Interface
         input  wire        we,        //! Write Enable
         input  wire        ub,
@@ -42,6 +44,7 @@ module sram
         input  wire [16:0] addr,      //! Address In
         input  wire [15:0] d,         //! Data In
         output  reg [15:0] q,         //! Data Out
+
         // SRAM External Interface
         output  reg [16:0] sram_addr, //! Address Out
         inout   reg [15:0] sram_dq,   //! Data In/Out
@@ -52,7 +55,6 @@ module sram
     );
 
     typedef enum logic [1:0] {
-        IDLE,
         RESET_MEMORY,
         NORMAL_OPERATION
     } state_t;
@@ -78,6 +80,7 @@ module sram
     always_ff @(posedge clk) begin : sramFSM
         case (state)
             RESET_MEMORY: begin
+                sram_wipe_done    <= 0;
                 {sram_lb_n, sram_ub_n} <= 2'b00;     // Unmask Low/High Byte
                 sram_addr <= reset_counter;          // Set Address
                 sram_dq   <= 16'h0000;               // Write Zeros
@@ -91,6 +94,7 @@ module sram
                 end
             end
             NORMAL_OPERATION: begin
+                sram_wipe_done    <= 1;
                 sram_addr <= {17{1'bX}};             // Set Address as "Don't Care"
                 sram_dq   <= {16{1'bZ}};             // Set Data Bus as High Impedance (Tristate)
                 if(we) begin
@@ -100,7 +104,7 @@ module sram
                     sram_dq   <= d;                  // Write Data
                 end
                 else begin
-                    {sram_lb_n, sram_ub_n} <= 2'b00;     // Mask Low/High Byte 
+                    {sram_lb_n, sram_ub_n} <= 2'b00; // Mask Low/High Byte 
                     {sram_oe_n, sram_we_n} <= 2'b01; // Write Disabled/Output Enabled
                     sram_addr <= addr;               // Set Address
                     q         <= sram_dq;            // Read Data
@@ -109,7 +113,7 @@ module sram
             end
 
             default: begin
-                next_state <= IDLE;
+                next_state <= RESET_MEMORY;
             end
         endcase
     end

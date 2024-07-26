@@ -287,7 +287,7 @@ wire    [31:0]  cmd_bridge_rd_data;
     
 // bridge host commands
 // synchronous to clk_74a
-wire            status_boot_done  = pll_core_locked_s; 
+wire            status_boot_done  = pll_core_locked_s & sram_wipe_done_s; 
 wire            status_setup_done = pll_core_locked_s; // rising edge triggers a target command
 wire            status_running    = reset_n; // we are running as soon as reset_n goes high
 
@@ -517,6 +517,8 @@ synch_3 #(.WIDTH(32)) s06 (cont3_key,       cont3_key_s,        clk_sys);
 synch_3 #(.WIDTH(32)) s07 (cont4_key,       cont4_key_s,        clk_sys);
 synch_3 #(.WIDTH(32)) s08 (boot_settings,   boot_settings_s,    clk_sys);
 synch_3 #(.WIDTH(32)) s09 (run_settings,    run_settings_s,     clk_sys);
+synch_3               s10 (sram_wipe_done,  sram_wipe_done_s,   clk_74a);
+
 
 logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en, gba_en;
 logic [1:0] tint;
@@ -739,9 +741,13 @@ sync_fifo #(
   .write_en_s (                                 )
 );
 
+wire sram_wipe_done, sram_wipe_done_s;
+
 cart_top cart
 (
   .reset                      ( reset             ),
+  .sram_rst                   ( ~pll_core_locked  ),
+  .sram_wipe_done             ( sram_wipe_done    ),
 
   .clk_sys                    ( clk_sys           ),
   .ce_cpu                     ( ce_cpu            ),
