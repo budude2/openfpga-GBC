@@ -430,7 +430,7 @@ assign ram_mask_file =              // 0 - no ram
 assign has_save = mbc_battery && (cart_ram_size > 0 || mbc2 || mbc7 || tama);
 
 wire bk_en = ioctl_download || ioctl_upload;
-wire [15:0] q, cram_q_o;
+wire [15:0] cram_q_o;
 
 assign cram_q_h = cram_q_o[15:8];
 assign cram_q_l = cram_q_o[7:0];
@@ -440,14 +440,14 @@ sram u_cram
 (
   // Clock and Reset
   .clk        ( clk_sys                     ), //! Input Clock
-  .reset      ( reset                       ), //! Reset
+  .reset      ( cart_download               ), //! Reset
 
   // Single Port Internal Bus Interface
-  .we         ( bk_en ? bk_wr     : cram_wr               ), //! Write Enable
-  .ub         ( cram_wr & cram_addr[0]                    ),
-  .lb         ( cram_wr & ~cram_addr[0]                   ),
-  .addr       ( bk_en ? bk_addr   : cram_addr[16:1]       ), //! Address In
-  .d          ( bk_en ? bk_data   : {cram_di, cram_di}    ), //! Data In
+  .we         ( bk_en ? bk_wr     : cram_wr                   ), //! Write Enable
+  .ub         ( bk_en ? 1'b1      : (cram_wr & cram_addr[0])  ),
+  .lb         ( bk_en ? 1'b1      : (cram_wr & ~cram_addr[0]) ),
+  .addr       ( bk_en ? bk_addr   : cram_addr[16:1]           ), //! Address In
+  .d          ( bk_en ? bk_data   : {cram_di, cram_di}        ), //! Data In
   .q          ( cram_q_o ), //! Data Out
 
   // SRAM External Interface
