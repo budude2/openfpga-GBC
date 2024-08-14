@@ -1525,7 +1525,7 @@ begin
 				else
 					-- LFSR 
 					if noi_playing = '1' and en_snd4 = '1' then
-						if noi_fcnt = 0 then
+						if noi_fcnt = 1 then
 							-- Noise LFSR
 							noi_xor  := not(noi_lfsr(0) xor noi_lfsr(1));
 							noi_lfsr := noi_xor & noi_lfsr(14 downto 1);
