@@ -55,7 +55,8 @@ end entity;
 
 architecture arch of gb_savestates is
 
-   constant STATESIZE      : integer := 16#B0CA#;
+   --constant STATESIZE      : integer := 16#B0CA#;
+   constant STATESIZE      : integer := 16#0000#;
    
    constant SETTLECOUNT    : integer := 100;
    constant HEADERCOUNT    : integer := 2;

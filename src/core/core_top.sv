@@ -1011,7 +1011,7 @@ gb gb
   .cart_ram_size          ( cart_ram_size           ),
   .save_state             ( ss_save                 ),
   .load_state             ( ss_load                 ),
-  .savestate_number       ( 1                       ),
+  .savestate_number       ( 0                       ),
   .sleep_savestate        ( sleep_savestate         ),
 
   .SaveStateExt_Din       ( SaveStateExt_Din        ),
