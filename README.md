@@ -22,6 +22,7 @@ ROMs should be placed in `/Assets/gbc/common`, and `/Assets/gb/common`
 * Custom Borders (SGB)
 * Custom Palettes (SGB)
 * Enhance GBA features
+* Save States and Sleep
 
 ### In Progress
-* Save States
+¯\_(ツ)_/¯
