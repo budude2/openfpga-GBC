@@ -274,6 +274,13 @@ assign cram1_we_n  = 1;
 assign cram1_ub_n  = 1;
 assign cram1_lb_n  = 1;
 
+assign sram_a      = 'h0;
+assign sram_dq     = {16{1'bZ}};
+assign sram_oe_n   = 1;
+assign sram_we_n   = 1;
+assign sram_ub_n   = 1;
+assign sram_lb_n   = 1;
+
 assign dbg_tx      = 1'bZ;
 assign user1       = 1'bZ;
 assign aux_scl     = 1'bZ;
@@ -287,7 +294,7 @@ wire    [31:0]  cmd_bridge_rd_data;
     
 // bridge host commands
 // synchronous to clk_74a
-wire            status_boot_done  = pll_core_locked_s & sram_wipe_done_s; 
+wire            status_boot_done  = pll_core_locked_s; 
 wire            status_setup_done = pll_core_locked_s; // rising edge triggers a target command
 wire            status_running    = reset_n; // we are running as soon as reset_n goes high
 
@@ -519,8 +526,6 @@ synch_3 #(.WIDTH(32)) s06 (cont3_key,       cont3_key_s,        clk_sys);
 synch_3 #(.WIDTH(32)) s07 (cont4_key,       cont4_key_s,        clk_sys);
 synch_3 #(.WIDTH(32)) s08 (boot_settings,   boot_settings_s,    clk_sys);
 synch_3 #(.WIDTH(32)) s09 (run_settings,    run_settings_s,     clk_sys);
-synch_3               s10 (sram_wipe_done,  sram_wipe_done_s,   clk_74a);
-
 
 logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en, gba_en;
 logic [1:0] tint;
@@ -689,13 +694,6 @@ always_ff @(posedge clk_74a) begin
   else if (dataslot_allcomplete)  ioctl_download <= 0;
 end
 
-reg ioctl_upload = 0;
-
-always_ff @(posedge clk_74a) begin
-  if      (dataslot_requestread) ioctl_upload <= 1;
-  else if (dataslot_allcomplete) ioctl_upload <= 0;
-end
-
 logic [14:0] cart_addr;
 logic [22:0] mbc_addr;
 logic cart_a15, cart_rd, cart_wr, cart_oe, nCS;
@@ -811,13 +809,9 @@ sync_fifo #(
   .write_en_s (                                 )
 );
 
-wire sram_wipe_done, sram_wipe_done_s;
-
 cart_top cart
 (
   .reset                      ( reset             ),
-  .sram_rst                   ( ~pll_core_locked  ),
-  .sram_wipe_done             ( sram_wipe_done    ),
 
   .clk_sys                    ( clk_sys           ),
   .ce_cpu                     ( ce_cpu            ),
@@ -854,7 +848,6 @@ cart_top cart
   .isSGB_game                 ( isSGB_game        ),
 
   .ioctl_download             ( ioctl_download    ),
-  .ioctl_upload               ( ioctl_upload      ),
   .ioctl_wr                   ( ioctl_wr          ),
   .ioctl_addr                 ( ioctl_addr        ),
   .ioctl_dout                 ( ioctl_dout        ),
@@ -890,15 +883,7 @@ cart_top cart
   .Savestate_CRAMWriteData    ( Savestate_CRAMWriteData),
   .Savestate_CRAMReadData     ( Savestate_CRAMReadData),
   
-  .rumbling                   ( rumbling          ),
-
-  // SRAM External Interface
-  .sram_addr                  ( sram_a            ), //! Address Out
-  .sram_dq                    ( sram_dq           ), //! Data In/Out
-  .sram_oe_n                  ( sram_oe_n         ), //! Output Enable
-  .sram_we_n                  ( sram_we_n         ), //! Write Enable
-  .sram_ub_n                  ( sram_ub_n         ), //! Upper Byte Mask
-  .sram_lb_n                  ( sram_lb_n         )  //! Lower Byte Mask
+  .rumbling                   ( rumbling          )
 );
 
 reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;

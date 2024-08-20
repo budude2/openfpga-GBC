@@ -1,6 +1,5 @@
 module cart_top (
 	input         reset,
-	input         sram_rst,
 
 	input         clk_sys,
 	input         ce_cpu,
@@ -72,16 +71,7 @@ module cart_top (
 	input         Savestate_CRAMRWrEn,
 	input   [7:0] Savestate_CRAMWriteData,
 	output  [7:0] Savestate_CRAMReadData,
-	output        rumbling,
-
-  output [16:0] sram_addr,
-  inout  [15:0] sram_dq,
-  output        sram_oe_n,
-  output        sram_we_n,
-  output        sram_ub_n,
-  output        sram_lb_n,
-
-  output        sram_wipe_done
+	output        rumbling
 );
 ///////////////////////////////////////////////////
 
@@ -432,35 +422,33 @@ assign ram_mask_file =              // 0 - no ram
 
 assign has_save = mbc_battery && (cart_ram_size > 0 || mbc2 || mbc7 || tama);
 
-wire bk_en = ioctl_download || ioctl_upload;
-wire [15:0] cram_q_o;
+// Up to 8kb * 16banks of Cart Ram (128kb)
+dpram #(16) cram_l (
+	.clock_a (clk_sys),
+	.address_a (cram_addr[16:1]),
+	.wren_a (cram_wr & ~cram_addr[0]),
+	.data_a (cram_di),
+	.q_a (cram_q_l),
 
-assign cram_q_h = cram_q_o[15:8];
-assign cram_q_l = cram_q_o[7:0];
-assign bk_q     = cram_q_o;
+	.clock_b (clk_sys),
+	.address_b (bk_addr[15:0]),
+	.wren_b (bk_wr),
+	.data_b (bk_data[7:0]),
+	.q_b (bk_q[7:0])
+);
 
-sram u_cram
-(
-  // Clock and Reset
-  .clk        		( clk_sys       		), //! Input Clock
-  .reset      		( sram_rst      		), //! Reset
-  .sram_wipe_done ( sram_wipe_done    ),
+dpram #(16) cram_h (
+	.clock_a (clk_sys),
+	.address_a (cram_addr[16:1]),
+	.wren_a (cram_wr & cram_addr[0]),
+	.data_a (cram_di),
+	.q_a (cram_q_h),
 
-  // Single Port Internal Bus Interface
-  .we         ( bk_en ? bk_wr     : cram_wr                   ), //! Write Enable
-  .ub         ( bk_en ? 1'b1      : (cram_wr & cram_addr[0])  ),
-  .lb         ( bk_en ? 1'b1      : (cram_wr & ~cram_addr[0]) ),
-  .addr       ( bk_en ? bk_addr   : cram_addr[16:1]           ), //! Address In
-  .d          ( bk_en ? bk_data   : {cram_di, cram_di}        ), //! Data In
-  .q          ( cram_q_o ), //! Data Out
-
-  // SRAM External Interface
-  .sram_addr  ( sram_addr ), //! Address Out
-  .sram_dq    ( sram_dq   ), //! Data In/Out
-  .sram_oe_n  ( sram_oe_n ), //! Output Enable
-  .sram_we_n  ( sram_we_n ), //! Write Enable
-  .sram_ub_n  ( sram_ub_n ), //! Upper Byte Mask
-  .sram_lb_n  ( sram_lb_n )  //! Lower Byte Mask
+	.clock_b (clk_sys),
+	.address_b (bk_addr[15:0]),
+	.wren_b (bk_wr),
+	.data_b (bk_data[15:8]),
+	.q_b (bk_q[15:8])
 );
 
 endmodule
