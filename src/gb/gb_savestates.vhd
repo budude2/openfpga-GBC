@@ -80,6 +80,9 @@ architecture arch of gb_savestates is
       SAVE_WAITSETTLE,
       SAVEINTERNALS_WAIT,
       SAVEINTERNALS_WRITE,
+      DELAY,
+      SAVEMEMORY_HDR,
+      --SAVEMEMORY_HDR_WAIT,
       SAVEMEMORY_NEXT,
       SAVEMEMORY_FIRST,
       SAVEMEMORY_READ,
@@ -145,6 +148,7 @@ begin
                   reset_out <= '1';
 				  BUS_rst   <= '1';
                elsif (save = '1') then
+                  --state                <= SAVE_WAITVSYNC;
                   state                <= SAVE_WAITVSYNC;
                   header_amount        <= header_amount + 1;
                elsif (load = '1') then
@@ -156,8 +160,10 @@ begin
             -- #################
             -- SAVE
             -- #################
-            
+
             when SAVE_WAITVSYNC =>
+               bus_out_ena    <= '0';
+
                if (lcd_vsync = '1') then
                   state                <= SAVE_WAITSETTLE;
                   settle               <= 0;
@@ -170,13 +176,26 @@ begin
                elsif (settle < SETTLECOUNT) then
                   settle <= settle + 1;
                else
-                  state            <= SAVEINTERNALS_WAIT;
+                  state            <= SAVEMEMORY_HDR;
                   bus_out_Adr      <= std_logic_vector(to_unsigned(savestate_address + HEADERCOUNT, 26));
                   bus_out_rnw      <= '0';
                   BUS_adr          <= (others => '0');
                   count            <= 1;
                   saving_savestate <= '1';
-               end if;            
+               end if;
+
+            when SAVEMEMORY_HDR =>
+               bus_out_Din    <= std_logic_vector(to_unsigned(STATESIZE, 32)) & std_logic_vector(header_amount);
+               bus_out_ena    <= '1';
+               state          <= DELAY;
+
+            -- I need to make this delay bigger
+
+            when DELAY =>
+               bus_out_ena    <= '0';
+               if (bus_out_done = '1') then
+                  state          <= SAVEINTERNALS_WAIT;
+               end if;
             
             when SAVEINTERNALS_WAIT =>
                bus_out_Din    <= BUS_Dout;
@@ -192,9 +211,22 @@ begin
                      BUS_adr     <= std_logic_vector(unsigned(BUS_adr) + 1);
                   else 
                      state       <= SAVEMEMORY_NEXT;
+                     --state       <= SAVEMEMORY_HDR;
                      count       <= 8;
                   end if;
                end if;
+
+            --when SAVEMEMORY_HDR_WAIT =>
+            --   bus_out_Adr    <= std_logic_vector(to_unsigned(savestate_address, 26));
+            --   bus_out_Din    <= std_logic_vector(to_unsigned(STATESIZE, 32)) & std_logic_vector(header_amount);
+            --   bus_out_ena    <= '0';
+            --   if (count < INTERNALSCOUNT) then
+            --      state       <= SAVEMEMORY_HDR_WAIT;
+            --      count       <= count + 1;
+            --   else
+            --      state       <= SAVEMEMORY_NEXT;
+            --      count       <= 8;
+            --   end if;
             
             when SAVEMEMORY_NEXT =>
                if (savetype_counter < SAVETYPESCOUNT) then
@@ -205,9 +237,6 @@ begin
                   Save_RAMAddr <= (others => '0');
                else
                   state          <= SAVESIZEAMOUNT;
-                  bus_out_Adr    <= std_logic_vector(to_unsigned(savestate_address, 26));
-                  bus_out_Din    <= std_logic_vector(to_unsigned(STATESIZE, 32)) & std_logic_vector(header_amount);
-                  bus_out_ena    <= '1';
                   if (increaseSSHeaderCount = '0') then
                      bus_out_be  <= x"F0";
                   end if;
@@ -241,11 +270,11 @@ begin
                end if;
             
             when SAVESIZEAMOUNT =>
-               if (bus_out_done = '1') then
+               --if (bus_out_done = '1') then
                   state            <= IDLE;
                   saving_savestate <= '0';
                   sleep_savestate  <= '0';
-               end if;
+               --end if;
             
             
             -- #################

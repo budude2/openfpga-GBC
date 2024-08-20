@@ -312,7 +312,7 @@ set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC ON
 set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_DUPLICATION ON
 set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_RETIMING ON
 set_global_assignment -name PHYSICAL_SYNTHESIS_ASYNCHRONOUS_SIGNAL_PIPELINING ON
-set_global_assignment -name FITTER_EFFORT "AUTO FIT"
+set_global_assignment -name FITTER_EFFORT "FAST FIT"
 set_global_assignment -name ROUTER_LCELL_INSERTION_AND_LOGIC_DUPLICATION ON
 
 # Assembler Assignments
@@ -324,7 +324,6 @@ set_global_assignment -name GENERATE_RBF_FILE ON
 # Signal Tap Assignments
 # ======================
 set_global_assignment -name ENABLE_SIGNALTAP OFF
-set_global_assignment -name USE_SIGNALTAP_FILE stp1.stp
 
 # Power Estimation Assignments
 # ============================
@@ -741,6 +740,9 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_1wire
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spiclk
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimiso
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimosi
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name SYSTEMVERILOG_FILE gb/sram_128k_x1_x16.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gb/save_state_controller.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/rtc_loader.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/rumbler.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/save_handler.sv
@@ -809,11 +811,10 @@ set_global_assignment -name QIP_FILE apf/apf.qip
 set_global_assignment -name QIP_FILE apf/mf_ddio_bidir_12.qip
 set_global_assignment -name VERILOG_FILE core/core_bridge_cmd.v
 set_global_assignment -name SDC_FILE core/core_constraints.sdc
-set_global_assignment -name SIGNALTAP_FILE core/stp1.stp
 set_global_assignment -name QIP_FILE core/mf_pllbase.qip
 set_global_assignment -name SIP_FILE core/mf_pllbase.sip
 set_global_assignment -name SOURCE_FILE db/ap_core.cmp.rdb
-set_global_assignment -name SIGNALTAP_FILE stp1.stp
 set_global_assignment -name QIP_FILE gb/rtc_ram/rtc_ram.qip
-set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name ALM_REGISTER_PACKING_EFFORT MEDIUM
+set_global_assignment -name FINAL_PLACEMENT_OPTIMIZATION NEVER
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
