@@ -25,4 +25,4 @@ ROMs should be placed in `/Assets/gbc/common`, and `/Assets/gb/common`
 * Save States and Sleep
 
 ### In Progress
-¯\_(ツ)_/¯
+¯\\_(ツ)_/¯
