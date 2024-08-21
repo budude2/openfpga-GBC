@@ -741,7 +741,9 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spiclk
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimiso
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to bridge_spimosi
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
-set_global_assignment -name SYSTEMVERILOG_FILE gb/sram_128k_x1_x16.sv
+set_global_assignment -name ALM_REGISTER_PACKING_EFFORT MEDIUM
+set_global_assignment -name FINAL_PLACEMENT_OPTIMIZATION NEVER
+
 set_global_assignment -name SYSTEMVERILOG_FILE gb/save_state_controller.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/rtc_loader.sv
 set_global_assignment -name SYSTEMVERILOG_FILE gb/rumbler.sv
@@ -773,7 +775,6 @@ set_global_assignment -name VHDL_FILE gb/gb_statemanager.vhd
 set_global_assignment -name VHDL_FILE gb/gb_savestates.vhd
 set_global_assignment -name VHDL_FILE gb/dpram.vhd
 set_global_assignment -name SYSTEMVERILOG_FILE gb/ddram.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gb/cheatcodes.sv
 set_global_assignment -name VHDL_FILE gb/bus_savestates.vhd
 set_global_assignment -name VERILOG_FILE gb/mappers/tama.v
 set_global_assignment -name VERILOG_FILE gb/mappers/sachen.v
@@ -815,6 +816,4 @@ set_global_assignment -name QIP_FILE core/mf_pllbase.qip
 set_global_assignment -name SIP_FILE core/mf_pllbase.sip
 set_global_assignment -name SOURCE_FILE db/ap_core.cmp.rdb
 set_global_assignment -name QIP_FILE gb/rtc_ram/rtc_ram.qip
-set_global_assignment -name ALM_REGISTER_PACKING_EFFORT MEDIUM
-set_global_assignment -name FINAL_PLACEMENT_OPTIMIZATION NEVER
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
