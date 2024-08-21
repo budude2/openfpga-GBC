@@ -984,13 +984,6 @@ gb gb
   .serial_clk_out         ( ser_clk_out             ),
   .serial_data_out        ( port_tran_so            ),
   
-  // Palette download will disable cheats option (HPS doesn't distinguish downloads),
-  // so clear the cheats and disable second option (chheats enable/disable)
-  .gg_reset               ( 0                       ),
-  .gg_en                  ( 0                       ),
-  .gg_code                ( 0                       ),
-  .gg_available           (                         ),
-  
   // savestates
   .cart_ram_size          ( cart_ram_size           ),
   .save_state             ( ss_save                 ),

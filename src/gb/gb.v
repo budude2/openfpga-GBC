@@ -53,7 +53,7 @@ module gb (
 
     // Bootrom features
 	input boot_gba_en,
-    input fast_boot_en,
+   input fast_boot_en,
 
 	// audio
 	output [15:0] audio_l,
@@ -75,11 +75,6 @@ module gb (
 	
 	output speed,   //GBC
 	output DMA_on,
-	
-	input          gg_reset,
-	input          gg_en,
-	input  [128:0] gg_code,
-	output         gg_available,
 
 	//serial port
 	output sc_int_clock2,
@@ -318,8 +313,6 @@ wire cpu_wr_n_edge = ~(old_cpu_wr_n & ~cpu_wr_n);
 
 wire cpu_stop;
 
-wire genie_ovr;
-wire [7:0] genie_data;
 wire [15:0] cpu_addr_raw;
 
 wire [7:0] snd_d_in;
@@ -338,7 +331,7 @@ megaduck_swizzle md_swizz
 );
 
 GBse cpu (
-	.RESET_n           ( !reset_ss        ),
+	.RESET_n           ( !reset_ss       ),
 	.CLK_n             ( clk_sys         ),
 	.CLKEN             ( cpu_clken       ),
 	.WAIT_n            ( 1'b1            ),
@@ -353,33 +346,17 @@ GBse cpu (
    .RFSH_n            (                 ),
    .HALT_n            (                 ),
    .BUSAK_n           (                 ),
-   .A                 ( cpu_addr_raw        ),
-   .DI                ( genie_ovr ? genie_data : cpu_di),
+   .A                 ( cpu_addr_raw    ),
+   .DI                ( cpu_di          ),
    .DO                ( cpu_do          ),
 	.STOP              ( cpu_stop        ),
-    .isGBC             ( isGBC           ),
+   .isGBC             ( isGBC           ),
    // savestates
    .SaveStateBus_Din  (SaveStateBus_Din ), 
    .SaveStateBus_Adr  (SaveStateBus_Adr ),
    .SaveStateBus_wren (SaveStateBus_wren),
    .SaveStateBus_rst  (SaveStateBus_rst ),
    .SaveStateBus_Dout (SaveStateBus_wired_or[0])
-);
-
-// --------------------------------------------------------------------
-// --------------------------- Cheat Engine ---------------------------
-// --------------------------------------------------------------------
-
-CODES codes (
-	.clk        (clk_sys),
-	.reset      (gg_reset),
-	.enable     (gg_en),
-	.addr_in    (cpu_addr),
-	.data_in    (cpu_di),
-	.available  (gg_available),
-	.code       (gg_code),
-	.genie_ovr  (genie_ovr),
-	.genie_data (genie_data)
 );
 
 // --------------------------------------------------------------------
