@@ -6,7 +6,7 @@ Please report any issues encountered to this repo. Issues will be upstreamed as 
 ## Installation
 To install the core, copy the `Assets`, `Cores`, and `Platform` folders over to the root of your SD card. Please note that Finder on macOS automatically _replaces_ folders, rather than merging them like Windows does, so you have to manually merge the folders.
 
-Place the GBC bios in `/Assets/gbc/common` named "gbc_bios.bin", and the GB bios in `/Assets/gb/common` named "gb_bios.bin".
+Place the GBC bios in `/Assets/gbc/common` named "gbc_bios.bin", the GB bios in `/Assets/gb/common` named "gb_bios.bin", and the SGB bios in `/Assets/gb/common` named "sgb_boot.bin".
 
 
 ## Usage
@@ -22,6 +22,7 @@ ROMs should be placed in `/Assets/gbc/common`, and `/Assets/gb/common`
 * Custom Borders (SGB)
 * Custom Palettes (SGB)
 * Enhance GBA features
+* Save States and Sleep
 
 ### In Progress
-* Save States
+¯\\_(ツ)_/¯
