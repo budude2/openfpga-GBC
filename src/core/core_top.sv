@@ -992,11 +992,9 @@ gb gb
   .gg_available           (                         ),
   
   // savestates
-  .increaseSSHeaderCount  ( 0                       ),
   .cart_ram_size          ( cart_ram_size           ),
   .save_state             ( ss_save                 ),
   .load_state             ( ss_load                 ),
-  .savestate_number       ( 0                       ),
   .sleep_savestate        ( sleep_savestate         ),
 
   .SaveStateExt_Din       ( SaveStateExt_Din        ),
@@ -1017,10 +1015,7 @@ gb gb
   .SAVE_out_rnw           ( ss_rnw                  ), // read = 1, write = 0
   .SAVE_out_ena           ( ss_req                  ), // one cycle high for each action
   .SAVE_out_be            ( ss_be                   ),            
-  .SAVE_out_done          ( ss_ack                  ), // should be one cycle high when write is done or read value is valid
-  
-  .rewind_on              ( 0                       ),
-  .rewind_active          ( 0                       )
+  .SAVE_out_done          ( ss_ack                  )  // should be one cycle high when write is done or read value is valid
 );
 
 // Sound

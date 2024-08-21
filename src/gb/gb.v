@@ -89,11 +89,9 @@ module gb (
 	output serial_data_out,
 	
 	// savestates
-	input        increaseSSHeaderCount,
 	input  [7:0] cart_ram_size,
 	input        save_state,
 	input        load_state,
-	input  [1:0] savestate_number,
 	output       sleep_savestate,
 	
 	output [63:0] SaveStateExt_Din, 
@@ -114,10 +112,7 @@ module gb (
 	output        SAVE_out_rnw,     // read = 1, write = 0
 	output        SAVE_out_ena,     // one cycle high for each action
 	output  [7:0] SAVE_out_be,     
-	input         SAVE_out_done,    // should be one cycle high when write is done or read value is valid
-	
-	input         rewind_on,
-	input         rewind_active
+	input         SAVE_out_done    // should be one cycle high when write is done or read value is valid
 );
 
 // savestates
@@ -678,7 +673,7 @@ wire [7:0] dma_data = (isGBC & dma_sel_wram) ? wram_do :
                                 8'hFF;
 
 video video (
-	.reset       ( reset_ss         ),
+	.reset       ( reset_ss      ),
 	.clk         ( clk_sys       ),
 	.ce          ( ce            ),   // 4Mhz
 	.ce_cpu      ( ce_cpu        ),   //can be 2x in cgb double speed mode
@@ -690,7 +685,6 @@ video video (
 
 	.irq         ( video_irq     ),
 	.vblank_irq  ( vblank_irq    ),
-
 
 	.cpu_sel_reg ( sel_video_reg ),
 	.cpu_sel_oam ( sel_video_oam ),
@@ -1051,8 +1045,6 @@ wire [63:0] SaveStateBus_Dout  = SaveStateBus_wired_or[0] | SaveStateBus_wired_o
                                  SaveStateBus_wired_or[4] | SaveStateBus_wired_or[5] | SaveStateBus_wired_or[6] | SaveStateBus_wired_or[7] |
                                  SaveStateExt_Dout;
  
-wire sleep_rewind, sleep_savestates;
- 
 gb_savestates gb_savestates (
    .clk                    (clk_sys),
    .reset_in               (reset_r),
@@ -1060,7 +1052,6 @@ gb_savestates gb_savestates (
    
    .load_done              (savestate_loaded),
    
-   .increaseSSHeaderCount  (increaseSSHeaderCount),
    .save                   (savestate_savestate),
    .load                   (savestate_loadstate),
    .savestate_address      (savestate_address),
@@ -1075,10 +1066,8 @@ gb_savestates gb_savestates (
    .BUS_wren               (SaveStateBus_wren), 
    .BUS_rst                (SaveStateBus_rst), 
    .BUS_Dout               (SaveStateBus_Dout),
-      
-   //.loading_savestate      (loading_savestate),
-   //.saving_savestate       (saving_savestate),
-   .sleep_savestate        (sleep_savestates),
+
+   .sleep_savestate        (sleep_savestate),
    .clock_ena_in           (ce_2x),
    
    .Save_RAMAddr           (Savestate_RAMAddr),     
@@ -1099,18 +1088,13 @@ gb_savestates gb_savestates (
    .bus_out_done           (SAVE_out_done)  
 );
 
-gb_statemanager #(58720256, 33554432) gb_statemanager (
+gb_statemanager #(58720256) gb_statemanager (
    .clk                 (clk_sys),
    .reset               (reset_r),
 
-   .rewind_on           (rewind_on),    
-   .rewind_active       (rewind_active),
-
-   .savestate_number    (savestate_number),
    .save                (save_state),
    .load                (load_state),
 
-   .sleep_rewind        (sleep_rewind),
    .vsync               (lcd_vsync),       
 
    .request_savestate   (savestate_savestate),
@@ -1118,8 +1102,5 @@ gb_statemanager #(58720256, 33554432) gb_statemanager (
    .request_address     (savestate_address),  
    .request_busy        (savestate_busy)     
 );
-
-assign sleep_savestate = sleep_rewind | sleep_savestates;
-
 
 endmodule

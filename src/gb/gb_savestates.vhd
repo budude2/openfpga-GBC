@@ -13,7 +13,6 @@ entity gb_savestates is
             
       load_done               : out    std_logic := '0';
             
-      increaseSSHeaderCount   : in     std_logic; 
       save                    : in     std_logic;  
       load                    : in     std_logic;
       savestate_address       : in     integer;
@@ -82,7 +81,6 @@ architecture arch of gb_savestates is
       SAVEINTERNALS_WRITE,
       DELAY,
       SAVEMEMORY_HDR,
-      --SAVEMEMORY_HDR_WAIT,
       SAVEMEMORY_NEXT,
       SAVEMEMORY_FIRST,
       SAVEMEMORY_READ,
@@ -123,7 +121,7 @@ begin
    begin
       if rising_edge(clk) then
    
-         Save_RAMWrEn <= (others => '0');
+         Save_RAMWrEn  <= (others => '0');
          bus_out_ena   <= '0';
          BUS_wren      <= '0';
          BUS_rst       <= '0';
@@ -148,7 +146,6 @@ begin
                   reset_out <= '1';
 				  BUS_rst   <= '1';
                elsif (save = '1') then
-                  --state                <= SAVE_WAITVSYNC;
                   state                <= SAVE_WAITVSYNC;
                   header_amount        <= header_amount + 1;
                elsif (load = '1') then
@@ -189,12 +186,11 @@ begin
                bus_out_ena    <= '1';
                state          <= DELAY;
 
-            -- I need to make this delay bigger
-
             when DELAY =>
-               bus_out_ena    <= '0';
+               bus_out_ena <= '0';
+
                if (bus_out_done = '1') then
-                  state          <= SAVEINTERNALS_WAIT;
+                  state <= SAVEINTERNALS_WAIT;
                end if;
             
             when SAVEINTERNALS_WAIT =>
@@ -211,22 +207,9 @@ begin
                      BUS_adr     <= std_logic_vector(unsigned(BUS_adr) + 1);
                   else 
                      state       <= SAVEMEMORY_NEXT;
-                     --state       <= SAVEMEMORY_HDR;
                      count       <= 8;
                   end if;
                end if;
-
-            --when SAVEMEMORY_HDR_WAIT =>
-            --   bus_out_Adr    <= std_logic_vector(to_unsigned(savestate_address, 26));
-            --   bus_out_Din    <= std_logic_vector(to_unsigned(STATESIZE, 32)) & std_logic_vector(header_amount);
-            --   bus_out_ena    <= '0';
-            --   if (count < INTERNALSCOUNT) then
-            --      state       <= SAVEMEMORY_HDR_WAIT;
-            --      count       <= count + 1;
-            --   else
-            --      state       <= SAVEMEMORY_NEXT;
-            --      count       <= 8;
-            --   end if;
             
             when SAVEMEMORY_NEXT =>
                if (savetype_counter < SAVETYPESCOUNT) then
@@ -236,10 +219,8 @@ begin
                   maxcount     <= savetypes(savetype_counter);
                   Save_RAMAddr <= (others => '0');
                else
-                  state          <= SAVESIZEAMOUNT;
-                  if (increaseSSHeaderCount = '0') then
-                     bus_out_be  <= x"F0";
-                  end if;
+                  state        <= SAVESIZEAMOUNT;
+                  bus_out_be   <= x"F0";
                end if;
                
             when SAVEMEMORY_FIRST =>
@@ -270,11 +251,9 @@ begin
                end if;
             
             when SAVESIZEAMOUNT =>
-               --if (bus_out_done = '1') then
-                  state            <= IDLE;
-                  saving_savestate <= '0';
-                  sleep_savestate  <= '0';
-               --end if;
+               state            <= IDLE;
+               saving_savestate <= '0';
+               sleep_savestate  <= '0';
             
             
             -- #################
