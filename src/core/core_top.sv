@@ -296,7 +296,7 @@ wire    [31:0]  cmd_bridge_rd_data;
 // synchronous to clk_74a
 wire            status_boot_done  = pll_core_locked_s; 
 wire            status_setup_done = pll_core_locked_s; // rising edge triggers a target command
-wire            status_running    = reset_n; // we are running as soon as reset_n goes high
+wire            status_running    = reset_n;           // we are running as soon as reset_n goes high
 
 wire            dataslot_requestread;
 wire    [15:0]  dataslot_requestread_id;
@@ -322,8 +322,7 @@ wire            rtc_valid;
 
 wire            savestate_supported   = 1;
 wire    [31:0]  savestate_addr        = 32'h40000000;
-//wire    [31:0]  savestate_size        = 32'h2C330; // 32768 + 16384 + 160 + 128 + 131072 + 528
-wire    [31:0]  savestate_size        = 49968 + cart_ram_size_bytes;
+wire    [31:0]  savestate_size        = 49968 + cart_ram_size_bytes; // 32768 + 16384 + 160 + 128 + 528 + cart_ram_size_bytes
 wire    [31:0]  savestate_maxloadsize = savestate_size;
 
 wire            savestate_start;
@@ -480,12 +479,12 @@ end
 // add your own devices here
 always_comb begin
   casex(bridge_addr)
-    32'h2xxxxxxx: begin bridge_rd_data = save_rd_data;         end
+    32'h2xxxxxxx: begin bridge_rd_data = save_rd_data;                end
     32'h4xxxxxxx: begin bridge_rd_data = save_state_bridge_read_data; end
-    32'hF8xxxxxx: begin bridge_rd_data = cmd_bridge_rd_data;   end
-    32'hF1000000: begin bridge_rd_data = int_bridge_read_data; end
-    32'hF2000000: begin bridge_rd_data = int_bridge_read_data; end
-    default:      begin bridge_rd_data = 0;                    end
+    32'hF8xxxxxx: begin bridge_rd_data = cmd_bridge_rd_data;          end
+    32'hF1000000: begin bridge_rd_data = int_bridge_read_data;        end
+    32'hF2000000: begin bridge_rd_data = int_bridge_read_data;        end
+    default:      begin bridge_rd_data = 0;                           end
   endcase
 end
 
@@ -633,44 +632,45 @@ save_handler save_handler
 
   logic [31:0] save_state_bridge_read_data;
 
-  save_state_controller save_state_controller (
-    .clk_74a                      ( clk_74a ),
-    .clk_sys                      ( clk_sys ),
+  save_state_controller save_state_controller
+  (
+    .clk_74a                      ( clk_74a                     ),
+    .clk_sys                      ( clk_sys                     ),
 
     // APF
-    .bridge_wr                    ( bridge_wr ),
-    .bridge_rd                    ( bridge_rd ),
-    .bridge_endian_little         ( bridge_endian_little ),
-    .bridge_addr                  ( bridge_addr ),
-    .bridge_wr_data               ( bridge_wr_data ),
+    .bridge_wr                    ( bridge_wr                   ),
+    .bridge_rd                    ( bridge_rd                   ),
+    .bridge_endian_little         ( bridge_endian_little        ),
+    .bridge_addr                  ( bridge_addr                 ),
+    .bridge_wr_data               ( bridge_wr_data              ),
     .save_state_bridge_read_data  ( save_state_bridge_read_data ),
 
     // APF Save States
-    .savestate_load               ( savestate_load ),
-    .savestate_load_ack_s         ( savestate_load_ack ),
-    .savestate_load_busy_s        ( savestate_load_busy ),
-    .savestate_load_ok_s          ( savestate_load_ok ),
-    .savestate_load_err_s         ( savestate_load_err ),
+    .savestate_load               ( savestate_load              ),
+    .savestate_load_ack_s         ( savestate_load_ack          ),
+    .savestate_load_busy_s        ( savestate_load_busy         ),
+    .savestate_load_ok_s          ( savestate_load_ok           ),
+    .savestate_load_err_s         ( savestate_load_err          ),
 
-    .savestate_start              ( savestate_start ),
-    .savestate_start_ack_s        ( savestate_start_ack ),
-    .savestate_start_busy_s       ( savestate_start_busy ),
-    .savestate_start_ok_s         ( savestate_start_ok ),
-    .savestate_start_err_s        ( savestate_start_err ),
+    .savestate_start              ( savestate_start             ),
+    .savestate_start_ack_s        ( savestate_start_ack         ),
+    .savestate_start_busy_s       ( savestate_start_busy        ),
+    .savestate_start_ok_s         ( savestate_start_ok          ),
+    .savestate_start_err_s        ( savestate_start_err         ),
 
     // Save States Manager
-    .ss_save                      ( ss_save ),
-    .ss_load                      ( ss_load ),
+    .ss_save                      ( ss_save                     ),
+    .ss_load                      ( ss_load                     ),
 
-    .ss_din                       ( ss_din ),
-    .ss_dout                      ( ss_dout ),
-    .ss_addr                      ( ss_addr ),
-    .ss_rnw                       ( ss_rnw ),
-    .ss_req                       ( ss_req ),
-    .ss_be                        ( ss_be ),
-    .ss_ack                       ( ss_ack ),
+    .ss_din                       ( ss_din                      ),
+    .ss_dout                      ( ss_dout                     ),
+    .ss_addr                      ( ss_addr                     ),
+    .ss_rnw                       ( ss_rnw                      ),
+    .ss_req                       ( ss_req                      ),
+    .ss_be                        ( ss_be                       ),
+    .ss_ack                       ( ss_ack                      ),
 
-    .ss_busy                      ( sleep_savestate )
+    .ss_busy                      ( sleep_savestate             )
   );
 
   wire [31:0] cart_ram_size_bytes;
@@ -698,7 +698,7 @@ logic [14:0] cart_addr;
 logic [22:0] mbc_addr;
 logic cart_a15, cart_rd, cart_wr, cart_oe, nCS;
 logic [7:0] cart_di, cart_do;
-logic        ioctl_wr, ioctl_wait;
+logic ioctl_wr, ioctl_wait;
 logic [24:0] ioctl_addr;
 logic [15:0] ioctl_dout;
 logic boot_download, cart_download, palette_download, sgb_border_download, cgb_boot_download, dmg_boot_download, sgb_boot_download;
@@ -725,7 +725,7 @@ always_comb begin
   boot_download  = cgb_boot_download | dmg_boot_download | sgb_boot_download;
 end
 
-reg isGBC     = `isgbc;
+reg isGBC = `isgbc;
 
 wire  [1:0] sdram_ds     =  cart_download ? 2'b11 : {mbc_addr[0], ~mbc_addr[0]};
 wire [15:0] sdram_do;
@@ -811,79 +811,79 @@ sync_fifo #(
 
 cart_top cart
 (
-  .reset                      ( reset             ),
+  .reset                      ( reset                   ),
 
-  .clk_sys                    ( clk_sys           ),
-  .ce_cpu                     ( ce_cpu            ),
-  .ce_cpu2x                   ( ce_cpu2x          ),
-  .speed                      ( speed             ),
-  .megaduck                   ( 0                 ),
-  .mapper_sel                 ( 0                 ),
+  .clk_sys                    ( clk_sys                 ),
+  .ce_cpu                     ( ce_cpu                  ),
+  .ce_cpu2x                   ( ce_cpu2x                ),
+  .speed                      ( speed                   ),
+  .megaduck                   ( 0                       ),
+  .mapper_sel                 ( 0                       ),
 
-  .cart_addr                  ( cart_addr         ),
-  .cart_a15                   ( cart_a15          ),
-  .cart_rd                    ( cart_rd           ),
-  .cart_wr                    ( cart_wr           ),
-  .cart_do                    ( cart_do           ),
-  .cart_di                    ( cart_di           ),
-  .cart_oe                    ( cart_oe           ),
+  .cart_addr                  ( cart_addr               ),
+  .cart_a15                   ( cart_a15                ),
+  .cart_rd                    ( cart_rd                 ),
+  .cart_wr                    ( cart_wr                 ),
+  .cart_do                    ( cart_do                 ),
+  .cart_di                    ( cart_di                 ),
+  .cart_oe                    ( cart_oe                 ),
 
-  .nCS                        ( nCS               ),
+  .nCS                        ( nCS                     ),
 
-  .mbc_addr                   ( mbc_addr          ),
+  .mbc_addr                   ( mbc_addr                ),
 
-  .dn_write                   ( dn_write          ),
-  .cart_ready                 ( cart_ready        ),
+  .dn_write                   ( dn_write                ),
+  .cart_ready                 ( cart_ready              ),
 
-  .cram_rd                    ( cram_rd           ),
-  .cram_wr                    ( cram_wr           ),
+  .cram_rd                    ( cram_rd                 ),
+  .cram_wr                    ( cram_wr                 ),
 
-  .cart_download              ( cart_download     ),
+  .cart_download              ( cart_download           ),
 
-  .ram_mask_file              ( ram_mask_file     ),
-  .ram_size                   ( cart_ram_size     ),
-  .has_save                   ( cart_has_save     ),
+  .ram_mask_file              ( ram_mask_file           ),
+  .ram_size                   ( cart_ram_size           ),
+  .has_save                   ( cart_has_save           ),
 
-  .isGBC_game                 ( isGBC_game        ),
-  .isSGB_game                 ( isSGB_game        ),
+  .isGBC_game                 ( isGBC_game              ),
+  .isSGB_game                 ( isSGB_game              ),
 
-  .ioctl_download             ( ioctl_download    ),
-  .ioctl_wr                   ( ioctl_wr          ),
-  .ioctl_addr                 ( ioctl_addr        ),
-  .ioctl_dout                 ( ioctl_dout        ),
-  .ioctl_wait                 ( ioctl_wait        ),
+  .ioctl_download             ( ioctl_download          ),
+  .ioctl_wr                   ( ioctl_wr                ),
+  .ioctl_addr                 ( ioctl_addr              ),
+  .ioctl_dout                 ( ioctl_dout              ),
+  .ioctl_wait                 ( ioctl_wait              ),
 
-  .bk_wr                      ( bk_wr             ),
-  .bk_rtc_wr                  ( bk_rtc_wr         ),
-  .bk_addr                    ( bk_addr           ),
-  .bk_data                    ( bk_data           ),
-  .bk_q                       ( bk_q              ),
-  .img_size                   ( loaded_save_size  ),
+  .bk_wr                      ( bk_wr                   ),
+  .bk_rtc_wr                  ( bk_rtc_wr               ),
+  .bk_addr                    ( bk_addr                 ),
+  .bk_data                    ( bk_data                 ),
+  .bk_q                       ( bk_q                    ),
+  .img_size                   ( loaded_save_size        ),
 
-  .rom_di                     ( rom_do            ),
+  .rom_di                     ( rom_do                  ),
 
-  .joystick_analog_0          ( 0                 ),
+  .joystick_analog_0          ( 0                       ),
 
-  .ce_32k                     ( ce_32k            ),
-  .RTC_time                   ( rtc_data_s ),
-  .RTC_timestampOut           ( RTC_timestampOut  ),
-  .RTC_savedtimeOut           ( RTC_savedtimeOut  ),
-  .RTC_inuse                  ( RTC_inuse ),
+  .ce_32k                     ( ce_32k                  ),
+  .RTC_time                   ( rtc_data_s              ),
+  .RTC_timestampOut           ( RTC_timestampOut        ),
+  .RTC_savedtimeOut           ( RTC_savedtimeOut        ),
+  .RTC_inuse                  ( RTC_inuse               ),
 
-  .SaveStateExt_Din           ( SaveStateExt_Din  ),
-  .SaveStateExt_Adr           ( SaveStateExt_Adr  ),
-  .SaveStateExt_wren          ( SaveStateExt_wren ),
-  .SaveStateExt_rst           ( SaveStateExt_rst  ),
-  .SaveStateExt_Dout          ( SaveStateExt_Dout ),
-  .savestate_load             ( SaveStateExt_load ),
-  .sleep_savestate            ( sleep_savestate   ),
+  .SaveStateExt_Din           ( SaveStateExt_Din        ),
+  .SaveStateExt_Adr           ( SaveStateExt_Adr        ),
+  .SaveStateExt_wren          ( SaveStateExt_wren       ),
+  .SaveStateExt_rst           ( SaveStateExt_rst        ),
+  .SaveStateExt_Dout          ( SaveStateExt_Dout       ),
+  .savestate_load             ( SaveStateExt_load       ),
+  .sleep_savestate            ( sleep_savestate         ),
 
-  .Savestate_CRAMAddr         ( Savestate_CRAMAddr),
-  .Savestate_CRAMRWrEn        ( Savestate_CRAMRWrEn),
-  .Savestate_CRAMWriteData    ( Savestate_CRAMWriteData),
-  .Savestate_CRAMReadData     ( Savestate_CRAMReadData),
+  .Savestate_CRAMAddr         ( Savestate_CRAMAddr      ),
+  .Savestate_CRAMRWrEn        ( Savestate_CRAMRWrEn     ),
+  .Savestate_CRAMWriteData    ( Savestate_CRAMWriteData ),
+  .Savestate_CRAMReadData     ( Savestate_CRAMReadData  ),
   
-  .rumbling                   ( rumbling          )
+  .rumbling                   ( rumbling                )
 );
 
 reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
