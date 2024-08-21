@@ -7,8 +7,8 @@
       "description": "Game Boy Color",
       "author": "budude2",
       "url": "https://github.com/budude2/openfpga-GBC",
-      "version": "1.3.0",
-      "date_release": "2024-08-20"
+      "version": "1.3.1",
+      "date_release": "2024-08-21"
     },
     "framework": {
       "target_product": "Analogue Pocket",
