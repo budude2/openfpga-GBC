@@ -19,6 +19,7 @@ entity gbc_snd is
         reset        : in std_logic;
 
         is_gbc       : in std_logic;
+        remove_pops  : in std_logic; -- 0: Accurate output, 1: Toggling DACs will not cause pops but some audio can be inaccurate.
 
         s1_read      : in std_logic;
         s1_write     : in std_logic;
@@ -45,6 +46,7 @@ architecture SYN of gbc_snd is
 			clk : in std_logic;
 			ce : in std_logic;
 			dac_en : in std_logic;
+			dac_invert : in std_logic;
 			dac_input : in std_logic_vector(3 downto 0);
 			dac_output : out signed(8 downto 0)
 		);
@@ -1643,13 +1645,13 @@ begin
 
 	-- Analog hardware emulation
 
-	sq1_dac : apu_dac port map (clk=>clk, ce=>ce, dac_en=>sq1_dac_en, dac_input=>sq1_wav,dac_output=>sq1_dac_out);
-	sq2_dac : apu_dac port map (clk=>clk, ce=>ce, dac_en=>sq2_dac_en, dac_input=>sq2_wav,dac_output=>sq2_dac_out);
-	wav_dac : apu_dac port map (clk=>clk, ce=>ce, dac_en=>wav_enable, dac_input=>wav_wav,dac_output=>wav_dac_out);
-	noi_dac : apu_dac port map (clk=>clk, ce=>ce, dac_en=>noi_dac_en, dac_input=>noi_wav,dac_output=>noi_dac_out);
+	sq1_dac : apu_dac port map (clk=>clk, ce=>ce, dac_en=>sq1_dac_en, dac_invert => not remove_pops, dac_input=>sq1_wav,dac_output=>sq1_dac_out);
+	sq2_dac : apu_dac port map (clk=>clk, ce=>ce, dac_en=>sq2_dac_en, dac_invert => not remove_pops, dac_input=>sq2_wav,dac_output=>sq2_dac_out);
+	wav_dac : apu_dac port map (clk=>clk, ce=>ce, dac_en=>wav_enable, dac_invert => not remove_pops, dac_input=>wav_wav,dac_output=>wav_dac_out);
+	noi_dac : apu_dac port map (clk=>clk, ce=>ce, dac_en=>noi_dac_en, dac_invert => not remove_pops, dac_input=>noi_wav,dac_output=>noi_dac_out);
 
 
-	mixer : process (sq1_dac_out, sq2_dac_out, wav_dac_out, noi_dac_out, ch_map, ch_vol)
+	mixer : process (sq1_dac_out, sq2_dac_out, wav_dac_out, noi_dac_out, ch_map, ch_vol, remove_pops)
         variable snd_left_in  : signed(10 downto 0);
         variable snd_right_in : signed(10 downto 0);   
         variable snd_tmp      : signed(15 downto 0);
@@ -1680,10 +1682,18 @@ begin
 		end loop;
 		
 		snd_tmp := snd_right_in * signed(("00" & ch_vol(2 downto 0)) + '1');
-        snd_right <= std_logic_vector(snd_tmp);
+		if (remove_pops = '1') then
+			snd_right <= std_logic_vector(shift_left(snd_tmp,1)); -- Compensate lower volume
+		else
+			snd_right <= std_logic_vector(snd_tmp);
+		end if;
 
-        snd_tmp := snd_left_in * signed(("00" & ch_vol(6 downto 4)) + '1');
-        snd_left <= std_logic_vector(snd_tmp);
+		snd_tmp := snd_left_in * signed(("00" & ch_vol(6 downto 4)) + '1');
+		if (remove_pops = '1') then
+			snd_left <= std_logic_vector(shift_left(snd_tmp,1));
+		else
+			snd_left <= std_logic_vector(snd_tmp);
+		end if;
     end process;
 
 end SYN;
@@ -1697,6 +1707,7 @@ entity apu_dac is
 		clk           : in std_logic;
 		ce            : in std_logic;
 		dac_en        : in std_logic;
+		dac_invert    : in std_logic;
 		dac_input     : in std_logic_vector(3 downto 0);
 		dac_output    : out signed(8 downto 0)
 	);
@@ -1712,10 +1723,15 @@ architecture apu_dac_arch of apu_dac is
 
 	-- Convert a DAC input code to a pseudo-analog value
 	function dac_out(
-		wav : std_logic_vector(3 downto 0)
+		wav : std_logic_vector(3 downto 0);
+		invert : std_logic
 	) return signed is
 	begin
-		return signed((wav xor "0111") & "00000");
+		if (invert = '1') then
+			return signed((wav xor "0111") & "00000"); -- 0xF = -256, 0x0 = 224.
+		else
+			return signed("0" & wav & "0000"); -- 0xF = 240, 0x0 = 0.
+		end if;
 	end function;
 begin
 	dac_output <= dac_analog;
@@ -1735,11 +1751,11 @@ begin
 		end if;
 	end process timers;
 
-	process(clk, ce, dac_en, dac_input, dac_decay_timer) 
+	process(clk, ce, dac_en, dac_invert, dac_input, dac_decay_timer)
 	begin
 		if rising_edge(clk) and ce = '1' then
 			if dac_en = '1' then
-				dac_analog <= dac_out(dac_input);
+				dac_analog <= dac_out(dac_input, dac_invert);
 			elsif dac_decay_timer = 0 then
 				if dac_analog < 0 then
 					dac_analog <= dac_analog + 1;

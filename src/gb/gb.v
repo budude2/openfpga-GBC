@@ -28,7 +28,7 @@ module gb (
 
 	input [7:0] joystick,
 	input isGBC,
-    input real_cgb_boot,
+   input real_cgb_boot,
 	input isSGB,
 
 	// cartridge interface
@@ -58,6 +58,7 @@ module gb (
 	// audio
 	output [15:0] audio_l,
 	output [15:0] audio_r,
+	input         audio_no_pops,
 
 	// Megaduck?
 	input megaduck,
@@ -417,6 +418,7 @@ gbc_snd audio (
 	.reset			( reset_ss			),
 	
 	.is_gbc        ( isGBC           ),
+	.remove_pops   ( audio_no_pops   ),
 
 	.s1_read  		( audio_rd  		),
 	.s1_write 		( audio_wr  		),

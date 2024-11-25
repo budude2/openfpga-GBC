@@ -526,7 +526,7 @@ synch_3 #(.WIDTH(32)) s07 (cont4_key,       cont4_key_s,        clk_sys);
 synch_3 #(.WIDTH(32)) s08 (boot_settings,   boot_settings_s,    clk_sys);
 synch_3 #(.WIDTH(32)) s09 (run_settings,    run_settings_s,     clk_sys);
 
-logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en, gba_en;
+logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en, gba_en, audio_no_pops;
 logic [1:0] tint;
 
 always_comb begin
@@ -541,6 +541,7 @@ always_comb begin
   ff_en          = run_settings_s[3];
   sgb_border_en  = run_settings_s[4];
   tint           = run_settings_s[6:5];
+  audio_no_pops  = run_settings_s[7];
 end
 
 mf_pllbase mp1
@@ -965,6 +966,7 @@ gb gb
   // audio
   .audio_l                ( GB_AUDIO_L              ),
   .audio_r                ( GB_AUDIO_R              ),
+  .audio_no_pops          ( audio_no_pops           ),
   
   // interface to the lcd
   .lcd_clkena             ( lcd_clkena              ),

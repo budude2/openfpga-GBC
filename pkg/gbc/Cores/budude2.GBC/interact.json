@@ -64,6 +64,18 @@
         "defaultval": 0,
         "mask":       "0xFFFFFFFB",
         "value":      "0x00000004"
+      },
+      {
+
+        "name": "No Audio Pops",
+        "id": 1006,
+        "type": "check",
+        "enabled": true,
+        "persist": true,
+        "address":    "0xF2000000",
+        "mask":       "0xFFFFFF7F",
+        "defaultval": "0x00000000",
+        "value":      "0x00000080"
       }
     ],
     "messages": []
