@@ -19,7 +19,7 @@ package pReg_savestates is
    -- components
    constant REG_SAVESTATE_Timer           : regmap_type := (  6,   46,      0,        1, x"0000000000000008");
 
-   constant REG_SAVESTATE_HDMA            : regmap_type := (  7,   44,      0,        1, x"0000000001FFFFF0");
+   constant REG_SAVESTATE_HDMA            : regmap_type := (  7,   47,      0,        1, x"0000E00001FFFFF0");
 
    constant REG_SAVESTATE_Link            : regmap_type := (  8,   16,      0,        1, x"0000000000000000");
 
