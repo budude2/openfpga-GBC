@@ -28,18 +28,18 @@ module hdma(
 );
 
 // savestates
-wire [44:0] SS_HDMA;
-wire [44:0] SS_HDMA_BACK;
+wire [47:0] SS_HDMA;
+wire [47:0] SS_HDMA_BACK;
 
-eReg_SavestateV #(0, 7, 44, 0, 64'h0000000001FFFFF0) iREG_SAVESTATE_HDMA (clk, SaveStateBus_Din, SaveStateBus_Adr, SaveStateBus_wren, SaveStateBus_rst, SaveStateBus_Dout, SS_HDMA_BACK, SS_HDMA);  
+eReg_SavestateV #(0, 7, 47, 0, 64'h0000E00001FFFFF0) iREG_SAVESTATE_HDMA (clk, SaveStateBus_Din, SaveStateBus_Adr, SaveStateBus_wren, SaveStateBus_rst, SaveStateBus_Dout, SS_HDMA_BACK, SS_HDMA);
 
 //"The preparation time (4 clocks) is the same in single and double speed mode"
 localparam START_DELAY = 3'd4, END_DELAY = 3'd4;
 
 
 // ff51-ff55 HDMA1-5 (GBC)
-reg [11:0] hdma_source;  // ff51, ff52 only top 4 bits used
-reg [8:0]  hdma_target;  // ff53 only lowest 5 bits used, ff54 only top 4 bits used
+reg [15:4] hdma_source;  // ff51, ff52 only top 4 bits used
+reg [15:4] hdma_target;  // ff53, ff54 only top 4 bits used
 
 reg        hdma_mode;    // ff55 bit 7 - 0 = General Purpose DMA / 1 = H-Blank DMA
 reg        hdma_enabled; // ff55 !bit 7 when read
@@ -53,8 +53,8 @@ wire [1:0] byte_cycles = speed ? 2'd3 : 2'd1;
 reg [1:0] hdma_cnt;
 
 //assign hdma_rd = hdma_active;
-assign hdma_source_addr = {        hdma_source, byte_cnt };
-assign hdma_target_addr = { 3'b100,hdma_target, byte_cnt };
+assign hdma_source_addr = { hdma_source, byte_cnt };
+assign hdma_target_addr = { hdma_target, byte_cnt };
 
 reg [2:0] dma_delay;
 
@@ -68,7 +68,7 @@ assign SS_HDMA_BACK[    0] = hdma_active ;
 assign SS_HDMA_BACK[ 2: 1] = hdma_state  ;
 assign SS_HDMA_BACK[    3] = hdma_enabled;
 assign SS_HDMA_BACK[15: 4] = hdma_source ;
-assign SS_HDMA_BACK[24:16] = hdma_target ;
+assign SS_HDMA_BACK[24:16] = hdma_target[12:4];
 assign SS_HDMA_BACK[27:25] = dma_delay   ;
 assign SS_HDMA_BACK[   28] = hdma_rd     ;
 assign SS_HDMA_BACK[   29] = hdma_end    ;
@@ -76,6 +76,7 @@ assign SS_HDMA_BACK[   30] = hdma_mode   ;
 assign SS_HDMA_BACK[38:31] = hdma_length ;
 assign SS_HDMA_BACK[42:39] = byte_cnt    ;
 assign SS_HDMA_BACK[44:43] = hdma_cnt    ;
+assign SS_HDMA_BACK[47:45] = hdma_target[15:13];
 
 
 always @(posedge clk) begin
@@ -84,7 +85,7 @@ always @(posedge clk) begin
 		hdma_state   <= SS_HDMA[ 2: 1]; // wait_h;
 		hdma_enabled <= SS_HDMA[    3]; // 1'b0;
 		hdma_source  <= SS_HDMA[15: 4]; // 12'hFFF;
-		hdma_target  <= SS_HDMA[24:16]; // 9'h1FF;
+		hdma_target  <= { SS_HDMA[47:45], SS_HDMA[24:16] }; // 12'hFFF;
 		dma_delay    <= SS_HDMA[27:25]; // 3'd0;
 		hdma_rd      <= SS_HDMA[   28]; // 0;
 		hdma_end     <= SS_HDMA[   29]; // 0;
@@ -97,10 +98,10 @@ always @(posedge clk) begin
 	   if(sel_reg && wr) begin
 		
 			case (addr)
-				4'd1: hdma_source[11:4] <= din;
-				4'd2: hdma_source[3:0]  <= din[7:4];
-				4'd3: hdma_target[8:4]  <= din[4:0];
-				4'd4: hdma_target[3:0]  <= din[7:4];
+				4'd1: hdma_source[15:8] <= din;
+				4'd2: hdma_source[7:4]  <= din[7:4];
+				4'd3: hdma_target[15:8] <= din;
+				4'd4: hdma_target[7:4]  <= din[7:4];
 			 
 				// writing the hdma register engages the dma engine
 				4'h5: begin
