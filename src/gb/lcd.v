@@ -278,10 +278,6 @@ wire  [4:0] r5 = pixel_out[4:0];
 wire  [4:0] g5 = pixel_out[9:5];
 wire  [4:0] b5 = pixel_out[14:10];
 
-wire [31:0] r10 = (r5 * 13) + (g5 * 2) +b5;
-wire [31:0] g10 = (g5 * 3) + b5;
-wire [31:0] b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
-
 // greyscale
 wire [7:0] grey = (pixel==0) ? 8'd255 : (pixel==1) ? 8'd173 : (pixel==2) ? 8'd82 : 8'd0;
 
@@ -297,12 +293,39 @@ function [7:0] blend;
 	end
 endfunction
 
+reg [3:0] color_lut_sr;
+wire [7:0] color_lut_dout;
+
+wire [9:0] color_lut_addr =
+		color_lut_sr[0] ? { r5, r5 } : // red only
+		color_lut_sr[1] ? { b5, g5 } : // mixed blue + green
+						  { b5, b5 };  // blue only
+
+// Color LUT for mix of 2 colors with 2 stage gamma
+dpram_dif #(10,8,10,8,"lcd_color_lut.mif") lcd_color_lut (
+	.clock (clk_vid),
+
+	.address_a (color_lut_addr),
+	.q_a (color_lut_dout)
+);
+
+
+reg [7:0] r_lut, g_lut, b_lut;
+always@(posedge clk_vid) begin
+	color_lut_sr <= { color_lut_sr[2:0], (ce_pix | ce_pix_n) };
+
+	if (color_lut_sr[1]) begin r_lut <= color_lut_dout; end
+	if (color_lut_sr[2]) begin g_lut <= color_lut_dout; end
+	if (color_lut_sr[3]) begin b_lut <= color_lut_dout; end
+end
+
+
 reg [7:0] r_tmp, g_tmp, b_tmp;
 always@(*) begin
 	if (~sgb_pal_en & isGBC & !originalcolors) begin
-		r_tmp = r10[8:1];
-		g_tmp = {g10[6:0],1'b0};
-		b_tmp = b10[8:1];
+		r_tmp = r_lut;
+		g_tmp = g_lut;
+		b_tmp = b_lut;
 	end else if (sgb_pal_en | (isGBC & originalcolors)) begin
 		r_tmp = {r5,r5[4:2]};
 		g_tmp = {g5,g5[4:2]};
