@@ -35,12 +35,9 @@ module cart_top (
 	output        isGBC_game,
 	output        isSGB_game,
 
-	input         ioctl_download,
-	input         ioctl_upload,
 	input         ioctl_wr,
 	input  [24:0] ioctl_addr,
 	input  [15:0] ioctl_dout,
-	output        ioctl_wait,
 
 	input         bk_wr,
 	input         bk_rtc_wr,
@@ -274,6 +271,11 @@ always @(posedge clk_sys) begin
 		cart_logo_idx <= 3'd0;
 		cart_logo_check <= 8'd0;
 		cart_mbc_type <= 8'd0;
+		cart_rom_size <= 8'd0;
+		cart_ram_size <= 8'd0;
+		cart_cgb_flag <= 1'b0;
+		cart_sgb_flag <= 8'd0;
+		cart_old_licensee <= 8'd0;
 		mbc1m <= 0;
 		mmm01 <= 0;
 		{ sachen, sachen_t1, sachen_t2 } <= 0;
@@ -368,7 +370,7 @@ assign ram_size = cart_ram_size;
 reg cart_ready_r = 0;
 reg ioctl_wait_r;
 always @(posedge clk_sys) begin
-	if(ioctl_wr) ioctl_wait_r <= 1;
+	if(ioctl_wr & cart_download) ioctl_wait_r <= 1;
 
 	if(speed?ce_cpu2x:ce_cpu) begin
 		dn_write <= ioctl_wait_r;
@@ -378,7 +380,6 @@ always @(posedge clk_sys) begin
 end
 
 assign cart_ready = cart_ready_r;
-assign ioctl_wait = ioctl_wait_r;
 
 reg [7:0] cart_do_r;
 always @* begin

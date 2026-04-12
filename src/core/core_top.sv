@@ -227,24 +227,6 @@ assign port_ir_rx_disable = 1;
 // bridge endianness
 assign bridge_endian_little = 0;
 
-// cart is unused, so set all level translators accordingly
-// directions are 0:IN, 1:OUT
-assign cart_tran_bank3[7:2]    = 6'hzz;
-assign cart_tran_bank3[0]      = 1'hz;
-assign cart_tran_bank3_dir     = 1'b1; // Set to output for rumble cart
-assign cart_tran_bank2         = 8'hzz;
-assign cart_tran_bank2_dir     = 1'b0;
-assign cart_tran_bank1         = 8'hzz;
-assign cart_tran_bank1_dir     = 1'b0;
-assign cart_tran_bank0[7]      = 1'hz;
-assign cart_tran_bank0[5:4]    = 2'hz;
-assign cart_tran_bank0_dir     = 1'b1; // Set to output for rumble cart
-assign cart_tran_pin30         = 1'b0; // reset or cs2, we let the hw control it by itself
-assign cart_tran_pin30_dir     = 1'bz;
-assign cart_pin30_pwroff_reset = 1'b0;  // hardware can control this
-assign cart_tran_pin31         = 1'bz;      // input
-assign cart_tran_pin31_dir     = 1'b0;  // input
-
 assign port_tran_sd     = 1'bz;
 assign port_tran_sd_dir = 1'b0;     // SD is input and not used
 assign video_skip       = 1'b0;
@@ -338,6 +320,7 @@ wire            savestate_load_ok;
 wire            savestate_load_err;
 
 wire            osnotify_inmenu;
+wire            osnotify_adapter_play;
 
 // bridge target commands
 // synchronous to clk_74a
@@ -424,6 +407,7 @@ core_bridge_cmd icb (
   .savestate_load_err         ( savestate_load_err         ),
 
   .osnotify_inmenu            ( osnotify_inmenu            ),
+  .osnotify_adapter_play      ( osnotify_adapter_play      ),
   
   .target_dataslot_read       ( target_dataslot_read       ),
   .target_dataslot_write      ( target_dataslot_write      ),
@@ -525,6 +509,7 @@ synch_3 #(.WIDTH(32)) s06 (cont3_key,       cont3_key_s,        clk_sys);
 synch_3 #(.WIDTH(32)) s07 (cont4_key,       cont4_key_s,        clk_sys);
 synch_3 #(.WIDTH(32)) s08 (boot_settings,   boot_settings_s,    clk_sys);
 synch_3 #(.WIDTH(32)) s09 (run_settings,    run_settings_s,     clk_sys);
+synch_3               s10 (osnotify_adapter_play, cart_physical_mode, clk_sys);
 
 logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en, gba_en, audio_no_pops;
 logic [1:0] tint;
@@ -697,12 +682,16 @@ end
 
 logic [14:0] cart_addr;
 logic [22:0] mbc_addr;
-logic cart_a15, cart_rd, cart_wr, cart_oe, nCS;
+logic cart_a15, cart_rd, cart_wr, cart_oe, cart_wait_n, nCS;
 logic [7:0] cart_di, cart_do;
-logic ioctl_wr, ioctl_wait;
+logic ioctl_wr, dn_write, cart_ready, cram_rd, cram_wr;
 logic [24:0] ioctl_addr;
 logic [15:0] ioctl_dout;
 logic boot_download, cart_download, palette_download, sgb_border_download, cgb_boot_download, dmg_boot_download, sgb_boot_download;
+logic cart_physical_mode, rumble_cart_wr, rumble_cart_rumble;
+logic cart_oe_backend, cart_phi, cart_speed_prev;
+logic [7:0] cart_do_backend;
+logic [5:0] cart_phi_counter;
 
 always_comb begin
   cart_download       = 0;
@@ -727,6 +716,16 @@ always_comb begin
 end
 
 reg isGBC = `isgbc;
+
+wire backend_cart_rd = ~cart_physical_mode & cart_rd;
+wire backend_cart_wr = ~cart_physical_mode & cart_wr;
+wire cart_access = cart_physical_mode & (cart_rd | cart_wr);
+wire cart_read_access = cart_access & ~cart_wr;
+wire cart_write_access = cart_access & cart_wr;
+wire [5:0] cart_phi_period_m1 = speed ? 6'd15 : 6'd31;
+wire [5:0] cart_phi_high_m1 = speed ? 6'd11 : 6'd23;
+wire cart_phi_fall = cart_physical_mode && (cart_phi_counter == cart_phi_high_m1);
+wire cart_phi_rise = cart_physical_mode && (cart_phi_counter == cart_phi_period_m1);
 
 wire  [1:0] sdram_ds     =  cart_download ? 2'b11 : {mbc_addr[0], ~mbc_addr[0]};
 wire [15:0] sdram_do;
@@ -767,9 +766,6 @@ sdram sdram (
  .dout           ( sdram_do               )
 );
 
-wire dn_write;
-wire cart_ready;
-wire cram_rd, cram_wr;
 wire [7:0] rom_do = (mbc_addr[0]) ? sdram_do[15:8] : sdram_do[7:0];
 wire [7:0] ram_mask_file, cart_ram_size;
 wire isGBC_game, isSGB_game;
@@ -779,14 +775,42 @@ wire [47:0] RTC_savedtimeOut;
 wire rumbling;
 wire RTC_inuse;
 
+assign cart_wait_n = 1'b1;
+assign cart_do = cart_physical_mode ? cart_tran_bank1 : cart_do_backend;
+assign cart_oe = cart_physical_mode ? cart_read_access : cart_oe_backend;
+
+assign cart_tran_bank3     = cart_access ? cart_addr[7:0] : {6'hzz, rumble_cart_rumble, 1'bz};
+assign cart_tran_bank3_dir = 1'b1;
+
+assign cart_tran_bank2     = cart_physical_mode ? {cart_a15, cart_addr[14:8]} : 8'hzz;
+assign cart_tran_bank2_dir = cart_physical_mode;
+
+assign cart_tran_bank1     = cart_write_access ? cart_di : 8'hzz;
+assign cart_tran_bank1_dir = cart_write_access;
+
+assign cart_tran_bank0     = cart_physical_mode
+                           ? {cart_phi,
+                              cart_access ? ~cart_wr : rumble_cart_wr,
+                              cart_access ? cart_wr : 1'b1,
+                              cart_access ? nCS : 1'b1}
+                           : {1'bz, rumble_cart_wr, 2'hz};
+assign cart_tran_bank0_dir = 1'b1;
+
+assign cart_tran_pin30       = 1'b0;
+assign cart_tran_pin30_dir   = 1'b0;
+assign cart_pin30_pwroff_reset = 1'b1;
+
+assign cart_tran_pin31       = 1'bz;
+assign cart_tran_pin31_dir   = 1'b0;
+
 rumbler rumbler_module
 (
   .clk          ( clk_sys             ),
   .reset        ( reset               ),
   .rumble_en    ( rumble_en           ),
   .rumbling     ( rumbling            ),
-  .cart_wr      ( cart_tran_bank0[6]  ),
-  .cart_rumble  ( cart_tran_bank3[1]  )
+  .cart_wr      ( rumble_cart_wr      ),
+  .cart_rumble  ( rumble_cart_rumble  )
 );
 
 reg ce_32k; // 32768Hz clock for RTC
@@ -823,11 +847,11 @@ cart_top cart
 
   .cart_addr                  ( cart_addr               ),
   .cart_a15                   ( cart_a15                ),
-  .cart_rd                    ( cart_rd                 ),
-  .cart_wr                    ( cart_wr                 ),
-  .cart_do                    ( cart_do                 ),
+  .cart_rd                    ( backend_cart_rd         ),
+  .cart_wr                    ( backend_cart_wr         ),
+  .cart_do                    ( cart_do_backend         ),
   .cart_di                    ( cart_di                 ),
-  .cart_oe                    ( cart_oe                 ),
+  .cart_oe                    ( cart_oe_backend         ),
 
   .nCS                        ( nCS                     ),
 
@@ -848,11 +872,9 @@ cart_top cart
   .isGBC_game                 ( isGBC_game              ),
   .isSGB_game                 ( isSGB_game              ),
 
-  .ioctl_download             ( ioctl_download          ),
   .ioctl_wr                   ( ioctl_wr                ),
   .ioctl_addr                 ( ioctl_addr              ),
   .ioctl_dout                 ( ioctl_dout              ),
-  .ioctl_wait                 ( ioctl_wait              ),
 
   .bk_wr                      ( bk_wr                   ),
   .bk_rtc_wr                  ( bk_rtc_wr               ),
@@ -886,6 +908,28 @@ cart_top cart
   
   .rumbling                   ( rumbling                )
 );
+
+always_ff @(posedge clk_sys) begin
+  if (reset || !cart_physical_mode) begin
+    cart_phi_counter <= 6'd0;
+    cart_speed_prev  <= speed;
+    cart_phi         <= 1'b1;
+  end else begin
+    cart_speed_prev <= speed;
+    if (speed != cart_speed_prev) begin
+      cart_phi_counter <= 6'd0;
+      cart_phi         <= 1'b1;
+    end else if (cart_phi_rise) begin
+      cart_phi_counter <= 6'd0;
+      cart_phi         <= 1'b1;
+    end else begin
+      cart_phi_counter <= cart_phi_counter + 6'd1;
+      if (cart_phi_fall) begin
+        cart_phi <= 1'b0;
+      end
+    end
+  end
+end
 
 reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
 
@@ -950,6 +994,7 @@ gb gb
   .cart_do                ( cart_do                 ),
   .cart_di                ( cart_di                 ),
   .cart_oe                ( cart_oe                 ),
+  .cart_wait_n            ( cart_wait_n             ),
 
   .nCS                    ( nCS                     ),
 

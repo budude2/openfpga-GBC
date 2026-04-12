@@ -40,6 +40,7 @@ module gb (
 	input [7:0] cart_do,
 	output [7:0] cart_di,
 	input  cart_oe,
+	input  cart_wait_n,
 
 	// WRAM or Cart RAM CS
 	output nCS,
@@ -335,7 +336,7 @@ GBse cpu (
 	.RESET_n           ( !reset_ss       ),
 	.CLK_n             ( clk_sys         ),
 	.CLKEN             ( cpu_clken       ),
-	.WAIT_n            ( 1'b1            ),
+	.WAIT_n            ( cart_wait_n     ),
 	.INT_n             ( irq_n           ),
 	.NMI_n             ( 1'b1            ),
 	.BUSRQ_n           ( 1'b1            ),

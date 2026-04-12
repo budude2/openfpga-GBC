@@ -20,7 +20,7 @@
       },
       "hardware": {
         "link_port": true,
-        "cartridge_adapter": 0
+        "cartridge_adapter": "0x01000000"
       }
     },
     "cores": [
