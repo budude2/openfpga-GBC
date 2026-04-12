@@ -54,7 +54,7 @@ module audio_filters
          output wire [15:0] audio_r
      );
 
-    reg sample_rate = 0; //0 - 48KHz, 1 - 96KHz
+    reg sample_rate = 1; //0 - 48KHz, 1 - 96KHz
 
     reg sample_ce;
     always @(posedge clk) begin
