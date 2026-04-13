@@ -7,7 +7,7 @@
       "description": "Game Boy",
       "author": "budude2",
       "url": "https://github.com/budude2/openfpga-GBC",
-      "version": "1.4",
+      "version": "1.4.0",
       "date_release": "2026-04-12"
     },
     "framework": {
