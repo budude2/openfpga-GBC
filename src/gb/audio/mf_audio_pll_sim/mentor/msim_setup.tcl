@@ -1,5 +1,5 @@
 
-# (C) 2001-2024 Altera Corporation. All rights reserved.
+# (C) 2001-2026 Altera Corporation. All rights reserved.
 # Your use of Altera Corporation's design tools, logic functions and 
 # other software and tools, and its AMPP partner logic functions, and 
 # any output files any of the foregoing (including device programming 
@@ -94,7 +94,7 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Altera IP within the design.
 # ----------------------------------------
-# ACDS 23.1 991 win32 2024.02.11.14:19:21
+# ACDS 25.1 1129 linux 2026.04.12.18:48:37
 
 # ----------------------------------------
 # Initialize variables
@@ -113,7 +113,7 @@ if ![info exists QSYS_SIMDIR] {
 }
 
 if ![info exists QUARTUS_INSTALL_DIR] { 
-  set QUARTUS_INSTALL_DIR "C:/intelfpga_lite/23.1std/quartus/"
+  set QUARTUS_INSTALL_DIR "/opt/intelFPGA/25.1/quartus/"
 }
 
 if ![info exists USER_DEFINED_COMPILE_OPTIONS] { 
@@ -150,7 +150,7 @@ ensure_lib          ./libraries/
 ensure_lib          ./libraries/work/
 vmap       work     ./libraries/work/
 vmap       work_lib ./libraries/work/
-if ![ string match "*Intel*FPGA*" [ vsim -version ] ] {
+if ![ string match "*Altera*FPGA*" [ vsim -version ] ] {
   ensure_lib                       ./libraries/altera_ver/           
   vmap       altera_ver            ./libraries/altera_ver/           
   ensure_lib                       ./libraries/lpm_ver/              
@@ -174,7 +174,7 @@ if ![ string match "*Intel*FPGA*" [ vsim -version ] ] {
 # Compile device library files
 alias dev_com {
   echo "\[exec\] dev_com"
-  if ![ string match "*Intel*FPGA*" [ vsim -version ] ] {
+  if ![ string match "*Altera*FPGA*" [ vsim -version ] ] {
     eval  vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS     "$QUARTUS_INSTALL_DIR/eda/sim_lib/altera_primitives.v"                     -work altera_ver           
     eval  vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS     "$QUARTUS_INSTALL_DIR/eda/sim_lib/220model.v"                              -work lpm_ver              
     eval  vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS     "$QUARTUS_INSTALL_DIR/eda/sim_lib/sgate.v"                                 -work sgate_ver            
