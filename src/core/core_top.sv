@@ -1119,6 +1119,7 @@ lcd lcd
   .sgb_pal_en     ( sgb_pal_en              ),
   .sgb_en         ( sgb_border_en & sgb_en  ),
   .sgb_freeze     ( sgb_lcd_freeze          ),
+  .ff_on          ( ff_on                   ),
 
   .clk_vid        ( clk_ram                 ),
   .hs             ( video_hs_gb             ),
