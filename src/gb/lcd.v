@@ -33,6 +33,7 @@ module lcd
 	input        analog_wide,
 
 	input        on,
+	input        ff_on,
 
 	// VGA output
 	input            clk_vid, // 67.108864 MHz
@@ -173,6 +174,13 @@ reg [14:0] vbuffer_outptr;
 reg [1:0] shadow_buf[160];
 
 reg hb, vb, gb_hb, gb_vb, wait_vbl;
+// Synchronize ff_on (clk_sys domain) into clk_vid domain
+reg ff_on_v1, ff_on_vid;
+always @(posedge clk_vid) begin
+	ff_on_v1  <= ff_on;
+	ff_on_vid <= ff_on_v1;
+end
+
 always @(posedge clk_vid) begin
 	reg [14:0] inptr,inptr1,inptr2;
 	reg old_lcd_off;
@@ -236,7 +244,18 @@ always @(posedge clk_vid) begin
 	// Lcd turned on. Wait in vblank for output reset.
 	if (~old_on & on & ~vb) wait_vbl <= 1'b1; // lcd enabled
 
-	if (old_lcd_off & ~lcd_off & vb) begin // lcd enabled or out of vblank
+	// Allow the reset when:
+	//   * NOT fast-forwarding (normal sync-on-VBlank-exit behavior), or
+	//   * wait_vbl is set, meaning the LCD was actually turned off and
+	//     back on (e.g. scene change / loading zone). Without this path,
+	//     wait_vbl would stay stuck during fast-forward and freeze v_cnt,
+	//     producing a white screen until fast-forward is released.
+	//
+	// Skipping the reset on plain VBlank exits during fast-forward avoids
+	// spurious vsync pulses that otherwise cause the dock to alternate
+	// between a stale "frame 0" and the actual fast-forward frames
+	// (f0->f1->f0->f2…), since GBC VBlank fires 4x more often at 4x speed.
+	if (old_lcd_off & ~lcd_off & vb & (~ff_on_vid | wait_vbl)) begin // lcd enabled or out of vblank
 		wait_vbl <= 0;
 		h_cnt <= 0;
 		v_cnt <= 0;
