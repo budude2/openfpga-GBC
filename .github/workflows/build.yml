@@ -1,0 +1,108 @@
+# Builds the openFPGA GB/GBC core with Quartus and produces the bit-reversed
+# Analogue Pocket bitstreams (gbc.rbf_r, gb.rbf_r).
+#
+# The repo has a single Quartus revision (ap_core); one compile yields one
+# ap_core.rbf which is bit-reversed into both core packages (GB and GBC share
+# the same bitstream — the platform is selected in firmware, not synthesis).
+#
+# Prior art this is modelled on:
+#   https://github.com/agg23/openfpga-NES/blob/main/.github/workflows/build.yml
+#   https://github.com/mincer-ray/openfpga-GBA/blob/main/.github/workflows/build.yml
+#
+# Tag a release build with:  git tag -a 1.5.0 -m "v1.5.0" && git push origin --tags
+name: Build / Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    tags: ["[0-9]+.[0-9]+.[0-9]+*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  synthesis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # The Quartus image (~5.5 GB compressed) plus its on-disk expansion and the
+      # build outputs exceed the runner's default free space. Reclaim ~12-15 GB first.
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.0
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+
+      # Compile with Quartus Prime Lite 21.1 (Cyclone V supported). Working dir is
+      # /build/src so the pre-flow TCL (apf/build_id_gen.tcl) resolves its relative
+      # output path (apf/build_id.v) and Quartus writes to src/output_files/.
+      - name: Compile FPGA design
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/build" \
+            -w /build/src \
+            raetro/quartus:21.1 \
+            quartus_sh --flow compile ap_core.qpf
+
+      - name: Upload output_files on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure_output_files
+          path: src/output_files/
+
+      - name: Verify bitstream was produced
+        run: test -f src/output_files/ap_core.rbf || { echo "::error::ap_core.rbf not generated"; exit 1; }
+
+      # Bit-reverse the single bitstream into both core packages.
+      - name: Reverse bitstream (Pocket .rbf_r)
+        run: |
+          python3 scripts/reverse_bitstream.py src/output_files/ap_core.rbf pkg/gbc/Cores/budude2.GBC/gbc.rbf_r
+          python3 scripts/reverse_bitstream.py src/output_files/ap_core.rbf pkg/gb/Cores/budude2.GB/gb.rbf_r
+
+      # Package each core's SD-card folder set into its own zip.
+      - name: Package cores
+        run: |
+          # GITHUB_REF_NAME is e.g. "1/merge" on PRs — strip slashes so it is a valid filename.
+          RAW="${GITHUB_REF_NAME:-dev-$(git rev-parse --short HEAD)}"
+          VERSION="${RAW//\//-}"
+          ( cd pkg/gbc && zip -r "../../budude2.GBC_${VERSION}.zip" Assets Cores Platforms )
+          ( cd pkg/gb  && zip -r "../../budude2.GB_${VERSION}.zip"  Assets Cores Platforms )
+
+      - name: Upload core artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cores
+          path: "*.zip"
+
+      # Surface timing-closure failures (negative slack) as a readable artifact.
+      - name: Extract timing report
+        if: always()
+        run: |
+          STA="src/output_files/ap_core.sta.summary"
+          if [ -f "$STA" ]; then cp "$STA" sta.summary.txt; else echo "no STA summary produced" > sta.summary.txt; fi
+
+      - name: Upload timing report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: timing_report
+          path: sta.summary.txt
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: v${{ github.ref_name }}
+          files: "*.zip"
+          generate_release_notes: true
