@@ -111,6 +111,7 @@ always @(posedge clk_sys) begin
 			lcd_freeze <= 0;
 		if (blank_output)
 			blank_output <= 0;
+		vbuffer_inptr <= 0; // #11: reset vbuffer write-ptr at every vsync to stop tearing after fast-forward
 	end
 end
 
