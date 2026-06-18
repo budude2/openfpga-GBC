@@ -74,7 +74,7 @@
         "persist": true,
         "address":    "0xF2000000",
         "mask":       "0xFFFFFF7F",
-        "defaultval": "0x00000000",
+        "defaultval": "0x00000080",
         "value":      "0x00000080"
       }
     ],
