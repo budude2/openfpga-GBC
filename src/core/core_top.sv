@@ -513,11 +513,13 @@ synch_3               s10 (osnotify_adapter_play, cart_physical_mode, clk_sys);
 
 logic sgb_en, rumble_en, originalcolors, ff_snd_en, ff_en, sgb_border_en, gba_en, audio_no_pops;
 logic [1:0] tint;
+logic [1:0] mapper_sel_top; // #55: Wisdom Tree / Mani161 mapper override select
 
 always_comb begin
   // These settings trigger a reset
   sgb_en         = boot_settings_s[0];
   gba_en         = boot_settings_s[1];
+  mapper_sel_top = boot_settings_s[3:2]; // #55: bits[3:2] select mapper override (0=auto, 1=WisdomTree, 2=Mani161)
 
   // These settings don't
   rumble_en      = run_settings_s[0];
@@ -843,7 +845,7 @@ cart_top cart
   .ce_cpu2x                   ( ce_cpu2x                ),
   .speed                      ( speed                   ),
   .megaduck                   ( 0                       ),
-  .mapper_sel                 ( 0                       ),
+  .mapper_sel                 ( {1'b0, mapper_sel_top}  ), // #55: wire mapper override from boot_settings[3:2]
 
   .cart_addr                  ( cart_addr               ),
   .cart_a15                   ( cart_a15                ),

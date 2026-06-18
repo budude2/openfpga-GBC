@@ -22,6 +22,21 @@
         "value":      1
       },
       {
+        "name": "Mapper Override",
+        "id": 1007,
+        "type": "list",
+        "enabled": true,
+        "persist": true,
+        "address":    "0xF1000000",
+        "mask":       "0xFFFFFFF3",
+        "defaultval": 0,
+        "options": [
+          { "name": "Auto",        "value": "0x00" },
+          { "name": "Wisdom Tree", "value": "0x04" },
+          { "name": "Mani161",     "value": "0x08" }
+        ]
+      },
+      {
         "name": "Enable Border",
         "id": 1001,
         "type": "check",
@@ -89,7 +104,7 @@
         "persist": true,
         "address":    "0xF2000000",
         "mask":       "0xFFFFFF7F",
-        "defaultval": "0x00000000",
+        "defaultval": "0x00000080",
         "value":      "0x00000080"
       }
     ],
