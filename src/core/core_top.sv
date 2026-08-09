@@ -1,6 +1,6 @@
 `default_nettype none
 
-`define isgbc 1
+`define isgbc 0
 
 module core_top (
 
@@ -1162,7 +1162,7 @@ sgb sgb (
   .joy_p54            ( joy_p54                       ),
   .joy_do             ( joy_do_sgb                    ),
 
-  .sgb_en             ( sgb_en & isSGB_game & ~isGBC  ),
+  .sgb_en             ( sgb_en & (isSGB_game | cart_physical_mode) & ~isGBC ),
   .tint               ( tint[1] & ~bw_en              ),
   .isGBC_game         ( isGBC & isGBC_game            ),
 
