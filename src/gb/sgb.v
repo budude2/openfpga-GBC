@@ -610,7 +610,8 @@ always @(posedge clk_sys) begin
 end
 
 reg [15:0] attr_file_data;
-reg [0:719] attr_file;
+reg [0:719] attr_file_temp, attr_file;
+reg attr_file_ready;
 
 reg attr_set_busy, attr_blk_busy, attr_lin_busy, attr_div_busy, attr_chr_busy;
 reg [8:0] attr_set_cnt, attr_set_cnt_r;
@@ -637,6 +638,7 @@ always @(posedge clk_sys) begin
 		attr_chr_busy <= 0;
 		attr_clear <= 1'b1;
 		attr_set_cnt <= 0;
+		attr_file_ready <= 1;
 	end else if (ce) begin
 
 		attr_cancel_mask <= 0;
@@ -648,6 +650,7 @@ always @(posedge clk_sys) begin
 			attr_set_cnt <= 0;
 			attr_file_ram_addr <= 0;
 			attr_file_idx <= 0;
+			attr_file_ready <= 0;
 		end
 
 		attr_file_data <= attr_files_ram[attr_file_ram_addr];
@@ -670,6 +673,7 @@ always @(posedge clk_sys) begin
 
 			if (attr_file_idx == 6'd45 || attr_set_cnt_r == 9'd359) begin
 				attr_set_busy <= 0;
+				attr_file_ready <= 1;
 				if (cancel_mask) attr_cancel_mask <= 1'b1;
 			end
 
@@ -683,6 +687,7 @@ always @(posedge clk_sys) begin
 			attr_tile_no <= 0;
 			attr_tile_cnt_x <= 0;
 			attr_tile_cnt_y <= 0;
+			attr_file_ready <= 0;
 		end
 
 		if (attr_blk_busy | attr_lin_busy | attr_div_busy) begin
@@ -697,6 +702,9 @@ always @(posedge clk_sys) begin
 					attr_blk_busy <= 0;
 					attr_lin_busy <= 0;
 					attr_div_busy <= 0;
+					if (!data_set_len | attr_div_busy) begin
+						attr_file_ready <= 1;
+					end
 				end
 			end
 		 end
@@ -765,6 +773,7 @@ always @(posedge clk_sys) begin
 		// ATTR_CHR
 		if (attr_chr_set) begin
 			attr_chr_busy <= 1'b1;
+			attr_file_ready <= 0;
 			if (attr_chr_start) begin
 				attr_chr_pal_cnt <= 0;
 				attr_chr_x <= attr_chr_data_x;
@@ -774,7 +783,13 @@ always @(posedge clk_sys) begin
 
 		if (attr_chr_busy) begin
 			attr_chr_pal_cnt <= attr_chr_pal_cnt + 1'b1;
-			if (&attr_chr_pal_cnt[1:0] || attr_chr_pal_cnt+1'b1 == attr_chr_len) attr_chr_busy <= 0;
+			if (&attr_chr_pal_cnt[1:0]) begin
+				attr_chr_busy <= 0;
+			end
+			if (attr_chr_pal_cnt+1'b1 == attr_chr_len) begin
+				attr_chr_busy <= 0;
+				attr_file_ready <= 1;
+			end
 
 			if (attr_chr_dir) begin
 				attr_chr_offset <= attr_chr_offset + 9'd20;
@@ -816,7 +831,7 @@ always @(posedge clk_sys) begin
 		end
 
 		if (attr_file_wr) begin
-			attr_file[attr_tile_no_wr*2 +: 2] <= attr_file_pal_wr;
+			attr_file_temp[attr_tile_no_wr*2 +: 2] <= attr_file_pal_wr;
 		end
 
 	end
@@ -893,7 +908,12 @@ reg [1:0] mask_en_r;
 always @(posedge clk_sys) begin
 	if (ce) begin
 
-		if (lcd_off) mask_en_r <= mask_en;
+		if (lcd_off) begin
+			mask_en_r <= mask_en;
+			if (attr_file_ready) begin
+				attr_file <= attr_file_temp;
+			end
+		end
 
 		pal_no <= attr_file[tile_number*2 +: 2];
 		lcd_data_r <= lcd_data;
